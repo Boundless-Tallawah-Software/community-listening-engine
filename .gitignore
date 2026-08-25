@@ -1,1 +1,22 @@
-gh*
+# Byte-compiled / optimized / compiled files
+__pycache__/
+*.py[cod]
+
+# Virtual environmentsenv/
+env/
+.venv/
+
+# Distribution / packaging
+.Python
+build/
+dist/
+*/*.egg-info/
+
+# IDE and OS specific files
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Testing / local data
+.coverage
