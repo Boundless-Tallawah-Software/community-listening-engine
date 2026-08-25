@@ -7,7 +7,22 @@ services:
       dockerfile: Dockerfile
     container_name: community_listening_api
     ports:
-      - "8000:8000" # Assuming the API runs on port 8000
+      - "8000:8000" # API Service Port
+    environment:
+      # Database connection variables (adjust as needed)
+      DATABASE_URL: postgresql://user:password@db:5432/community_listening
+      FLASK_ENV: development
+    depends_on:
+      - db
+    restart: always
+
+  core:
+    build:
+      context: ./core
+      dockerfile: Dockerfile
+    container_name: community_listening_core
+    ports:
+      - "8001:8001" # Core Service Port (Adjust if necessary)
     environment:
       # Database connection variables (adjust as needed)
       DATABASE_URL: postgresql://user:password@db:5432/community_listening
@@ -26,7 +41,7 @@ services:
     volumes:
       # Persist database data
       - ./data/postgres_data:/var/lib/postgresql/data
-      # Optional: Run schema initialization script on startup
+      # Run schema initialization script on startup
       - ./data/schema.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432" # Expose DB port for local debugging (optional)
