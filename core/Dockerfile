@@ -15,6 +15,11 @@ COPY requirements.txt requirements.txt
 # 2. Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# ... previous lines ...
+# Install the entire source code as an editable package
+COPY setup.py .
+RUN pip install -e . 
+
 # 3. Copy the core service source code
 COPY core/ . /app/
 
