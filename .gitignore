@@ -20,3 +20,6 @@ dist/
 
 # Testing / local data
 .coverage
+
+# DB test
+data/vault/
