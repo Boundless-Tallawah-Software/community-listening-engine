@@ -43,8 +43,7 @@ def test_webhook_missing_identity():
         "api_type": "text",
         "body": "Where is the sender?"
     }
-    response = client.post("/webpoints/whatsapp", json=payload) # Intentionally wrong path to check routing or 404, but let's test actual error logic on correct path
-    # Testing error logic on correct path:
+    # Test error handling for missing sender identity on the correct path
     response = client.post("/webhooks/whatsapp", json={"id": "no_from"})
     assert response.status_code == 400
     assert "Missing sender identity" in response.json()["detail"]
