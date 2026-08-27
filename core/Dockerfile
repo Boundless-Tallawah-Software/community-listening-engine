@@ -16,7 +16,7 @@ COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 3. Copy the core service source code
-COPY core/ . /app
+COPY core/ . /app/
 
 # 4. Define the command to run the core service
 # Assuming the main entry point is core/main.py
