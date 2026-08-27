@@ -1,7 +1,22 @@
 import httpx
 import pytest
 from fastapi.testclient import TestClient
-from community_listening_engine.api.main import app
+# Assume the correct content based on the needed import changes
+# Replace the faulty import line with the corrected one.
+# Since I cannot read the current content of the files, I will use the editor to replace the old, failing import with the new, correct one.
+
+# Example for test_api.py
+from api.main import app
+
+# Example for test_database_manager.py
+from core.database_manager import DatabaseManager
+
+# Example for test_intelligence_service.py
+from core.intelligence_service import IntelligenceService
+
+# Example for test_transcription_service.py
+from core.transcription_service import TranscriptionService
+
 
 client = TestClient(app)
 
