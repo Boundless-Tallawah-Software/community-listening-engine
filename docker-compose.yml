@@ -15,8 +15,8 @@ services:
 
   api-service:
     build:
-      context: ./api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: api/Dockerfile
     container_name: api_service
     environment:
       # Use the service name (database) for Docker networking resolution
@@ -29,8 +29,8 @@ services:
 
   worker-service:
     build:
-      context: ./core
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: core/Dockerfile
     container_name: worker_service
     environment:
       DATABASE_URL: postgresql://postgres:my_db_pass@database:5432/communitydb

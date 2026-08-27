@@ -1,5 +1,5 @@
-# Dockerfile for the API Service (in community_listening_engine/api/)
-# This image serves the primary API exposed on port 8000 to clients.
+# Dockerfile for the API Service
+# Uses the full project context (project root) for building.
 
 # Use a slim Python base image for smaller size
 FROM python:3.11-slim
@@ -7,18 +7,17 @@ FROM python:3.11-slim
 # Set the working directory
 WORKDIR /app
 
-# Copy the global requirements.txt. This file is assumed to be in the project root 
-# and contains all necessary dependencies for both services.
-COPY ../../requirements.txt /wheels/requirements.txt
+# 1. Copy the global requirements.txt from the root context
+# This is the single source of truth for dependencies.
+COPY requirements.txt requirements.txt
 
-# Install dependencies
-RUN pip install --no-cache-dir -r /wheels/requirements.txt
+# 2. Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the local service code
-COPY . /app
+# 3. Copy all source code for the API service from the local directory
+# This copies the contents of the 'api' folder into /app.
+COPY api/ .
 
-# Command to run the application using Uvicorn/FastAPI
-# We assume the entry point structure matches the dependencies. 
-# The specific command needs to be tailored to the actual API's structure, 
-# but for now, we define a generic entry point based on common practice.
+# 4. Define the command to run the API service
+# Assuming the main entry point is api/main.py and uses FastAPI.
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

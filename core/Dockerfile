@@ -9,16 +9,15 @@ WORKDIR /app
 
 # Copy the global requirements.txt. This file is assumed to be in the project root 
 # and contains all necessary dependencies for both services.
-# Note: The path must point to the project root location relative to this Dockerfile.
-COPY ../../requirements.txt /wheels/requirements.txt
+# 1. Copy the global requirements.txt from the root context
+COPY requirements.txt requirements.txt
 
-# Install dependencies
-RUN pip install --no-cache-dir -r /wheels/requirements.txt
+# 2. Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the local service code
-COPY . /app
+# 3. Copy the core service source code
+COPY core/ . /app
 
-# Command to keep the worker service running, perhaps starting a background task or a perpetual listener.
-# Assuming the worker runs a main script defined in 'core/main.py'
-# This command could be replaced by specific long-running worker initialization logic.
+# 4. Define the command to run the core service
+# Assuming the main entry point is core/main.py
 CMD ["python", "main.py"]
