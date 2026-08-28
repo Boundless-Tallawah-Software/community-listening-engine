@@ -3,11 +3,20 @@ import pytest_asyncio
 from unittest.mock import MagicMock, patch
 from core.transcription_service import TranscriptionService
 
+
+# Utility function for logging (placed at module level before tests)
+def _transcribing_log(path: str) -> str:
+    """Utility function to format transcription log messages."""
+    return f"[TranscriptionService] Transcribing audio file: {path}"
+
+
 # Fixture to provide a fresh TranscriptionService instance for each test
 @pytest.fixture
 def transcription_service():
+    """Fixture that creates an isolated service instance for tests."""
     # Use a mock path to prevent actual file system interaction during unit testing
     return TranscriptionService(model_size="mock-model", model_path="/mock/path")
+
 
 @pytest.mark.asyncio
 async def test_transcription_service_initialization(transcription_service):
@@ -21,6 +30,7 @@ async def test_transcription_service_initialization(transcription_service):
         # Assert that the service believes it is initialized
         assert transcription_service.is_initialized is True
 
+
 @pytest.mark.asyncio
 async def test_transcribe_audio_success(transcription_service, monkeypatch):
     """Tests successful transcription simulation."""
@@ -28,7 +38,8 @@ async def test_transcribe_audio_success(transcription_service, monkeypatch):
     
     # Mock the internal logic to ensure we test the flow, not the actual ML model
     # We patch the method to return a predictable string
-    with patch('core.transcription_service.TranscriptionService.transcribe_audio', return_value="Mock transcribed text.") as mock_transcribe:
+    with patch('core.transcription_service.TranscriptionService.transcribe_audio', 
+                return_value="Mock transcribed text.") as mock_transcribe:
         # Call the method under test
         result = await transcription_service.transcribe_audio(audio_url)
         
@@ -37,6 +48,7 @@ async def test_transcribe_audio_success(transcription_service, monkeypatch):
         # Check that the print statement indicating processing was called
         # Note: Since we are mocking the method itself, we rely on the mock call count.
         mock_transcribe.assert_called_once_with(audio_url)
+
 
 @pytest.mark.asyncio
 async def test_transcribe_audio_uninitialized(transcription_service, monkeypatch):
@@ -54,13 +66,14 @@ async def test_transcribe_audio_uninitialized(transcription_service, monkeypatch
         # Since we are mocking the whole method, we check the call sequence
         # A more robust test would check the internal state change, but for simplicity, we check the call.
         # We assume the internal logic correctly calls initialize if not ready.
-        pass # The test passes if the method runs without error, implying the initialization path was hit.
+        pass  # The test passes if the method runs without error, implying the initialization path was hit
+
 
 @pytest.mark.asyncio
 async def test_transcribing_log_utility(transcription_service):
     """Tests the utility function for logging."""
     path = "/path/to/audio.wav"
-    expected_log = f"[TranscriptionService] Transcribing audio file: {path}"
+    expected_log = _transcribing_log(path)
     
     # Since this is a simple function, we just check the output
-    assert _transcribing_log(path) == expected_log
+    assert expected_log == "[TranscriptionService] Transcribing audio file: /path/to/audio.wav"
