@@ -18,9 +18,9 @@ class DatabaseManager:
 
     def get_or_create_prospect(self, contact_info: str, source: str = "WhatsApp") -> str:
         """
-    Retrieves the ID of an existing prospect or creates a new one based on contact info.
-    Returns: The UUID string for the prospect.
-    """
+        Retrieves the ID of an existing prospect or creates a new one based on contact info.
+        Returns: The UUID string for the prospect.
+        """
         with self._get_connection() as conn:
             cursor = conn.execute("SELECT id FROM prospects WHERE contact_info = ?", (contact_info,))
             row = cursor.fetchone()
