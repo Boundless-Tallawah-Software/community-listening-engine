@@ -313,13 +313,13 @@ WEBHOOK_URL=https://yourdomain.com/api/webhooks
 docker-compose up -d --build
 
 # Run tests
-docker-compose run core pytest
+docker-compose run worker-service pytest
 
 # View specific service logs  
 docker-compose logs api/last 100
 
 # Check code style
-docker-compose run --build core black --check .
+docker-compose run --build worker-service black --check .
 ```
 
 ### For Builder Agents  
