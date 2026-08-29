@@ -15,8 +15,9 @@ COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 3. Copy all source code for the API service from the local directory
-# This copies the contents of the 'api' folder into /app.
+# This copies the contents of the 'api' and 'core' folders into /app.
 COPY api/ .
+COPY core/ .
 
 # 4. Define the command to run the API service
 # Assuming the main entry point is api/main.py and uses FastAPI.
