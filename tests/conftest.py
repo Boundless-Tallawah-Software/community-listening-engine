@@ -8,13 +8,13 @@ def setup_path(request):
     """
     Injects the project root directory into sys.path to allow
     pytest to find modules that are structured as packages.
-    The project root is assumed to be two directories up from the tests folder.
+    The project root is assumed to be three directories up from the tests folder.
     """
     # Determine the root directory of the project
     # __file__ is relative to conftest.py (tests/conftest.py)
     current_dir = Path(__file__).resolve()
-    # Go up two levels: tests/ -> / -> project_root
-    project_root = current_dir.parent.parent.parent
+    # Go up three levels: tests/ -> / -> parent -> project_root
+    project_root = current_dir.parent.parent.parent.parent
     
     # Add the project root to the Python path
     if str(project_root) not in sys.path:
@@ -34,3 +34,4 @@ def db_session():
     # Example: engine = create_engine("postgresql://user:pass@host/test_db")
     # yield Session(engine)
     pass
+

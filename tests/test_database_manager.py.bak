@@ -45,7 +45,7 @@ def test_save_interaction(db_manager):
     db_manager.save_interaction(sender_number, message_type, content)
     
     # Verify the log was created
-    logs = db_manager.get_recent_logs(1)
+    logs = db_manager.get_recent_analytics(1)
     assert len(logs) == 1
     assert logs[0]["sender_number"] == sender_number
     assert logs[0]["message_type"] == message_type
