@@ -1,11 +1,6 @@
-import httpx
 import pytest
 from fastapi.testclient import TestClient
-# Assume the correct content based on the needed import changes
-# Replace the faulty import line with the corrected one.
-# Since I cannot read the current content of the files, I will use the editor to replace the old, failing import with the new, correct one.
 
-# Example for test_api.py
 from api.main import app
 
 # Example for test_database_manager.py
