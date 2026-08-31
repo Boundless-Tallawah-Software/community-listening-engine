@@ -9,6 +9,7 @@ def _transcribing_log(path: str) -> str:
     return f"[TranscriptionService] Transcribing audio file: {path}"
 
 
+@pytest.fixture
 def transcription_service():
     """Fixture that creates an isolated service instance for tests."""
     return TranscriptionService(model_size="mock-model", model_path="/mock/path")

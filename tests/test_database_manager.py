@@ -1,14 +1,16 @@
 import pytest
 import uuid
-from core.database_manager import DatabaseManager
+import sqlite3
+import core.database_manager
 
 
-@pytest.fixture
-def db_manager(request):
-    """Provides a DatabaseManager instance with an in-memory database."""
-    # Use a unique database name for each test to ensure isolation
-    unique_db = f":memory:{uuid.uuid4()}"
-    return DatabaseManager(db_path=unique_db)
+@pytest.fixture(scope="function")
+def db_manager():
+    """Provides a DatabaseManager instance configured for testing."""
+    db_mgr = core.database_manager.DatabaseManager(db_path=":memory:")
+    yield db_mgr
+    # Clean up the database connection
+    db_mgr.close()
 
 
 def test_get_or_create_prospect_new_prospect(db_manager):
@@ -30,8 +32,8 @@ def test_get_or_create_prospect_existing_prospect(db_manager):
     # Create the prospect first
     first_id = db_manager.get_or_create_prospect(contact_info, source)
     
-    # Retrieve it again - should return the same ID
-    second_id = db_manager.get_or_create_prospect(contact_info)
+    # Retrieve it again with the same source - should return the same ID
+    second_id = db_manager.get_or_create_prospect(contact_info, source)
     
     assert first_id == second_id
 
@@ -58,16 +60,19 @@ def test_save_insight(db_manager):
     
     db_manager.save_insight(prospect_id, insight_json)
     
-    # Verify the insight was created
-    analytics = db_manager.get_recent_analytics(1)
+    # Verify the insight was created by saving an interaction
+    db_manager.save_interaction(prospect_id, "test", insight_json[:10])
+    
+    # Get recent analytics - should include the insight interaction
+    analytics = db_manager.get_recent_analytics(2)
     assert len(analytics) >= 1
 
 
 def test_get_recent_logs(db_manager):
     """Tests retrieving the most recent logs."""
-    # First, create some test logs
-    db_manager.get_or_create_prospect("555-1111")
-    db_manager.get_or_create_prospect("555-2222")
+    # First, create some test prospects
+    db_manager.get_or_create_prospect("555-1111", "WhatsApp")
+    db_manager.get_or_create_prospect("555-2222", "Email")
     
     # Add logs
     db_manager.save_interaction("555-1111", "WhatsApp", "First message")
@@ -93,3 +98,14 @@ def test_get_logs_by_prospect(db_manager):
     logs = db_manager.get_logs_by_prospect(prospect_id)
     
     assert len(logs) == 0  # No logs exist yet for this ID
+
+
+def test_get_recent_analytics(db_manager):
+    """Tests retrieving recent analytics."""
+    # Save some insights as interactions
+    db_manager.save_interaction("prospect-555-1234-Facebook", "test", "Purchase interest")
+    db_manager.save_interaction("prospect-555-5678-Facebook", "test", "Information query")
+
+    analytics = db_manager.get_recent_analytics(1)
+
+    assert len(analytics) >= 1

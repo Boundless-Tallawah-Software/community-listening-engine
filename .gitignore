@@ -23,3 +23,16 @@ dist/
 
 # DB test
 data/vault/
+
+# Sqlite
+:memory:*
+data/engine.db
+
+# Roo
+.roo*
+
+# Test artifacts
+community_listening_engine.egg-info/dependency_links.txt
+community_listening_engine.egg-info/PKG-INFO
+community_listening_engine.egg-info/SOURCES.txt
+community_listening_engine.egg-info/top_level.txt

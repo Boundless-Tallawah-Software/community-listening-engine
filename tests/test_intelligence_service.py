@@ -86,13 +86,16 @@ async def test_extract_insights_fallback(intelligence_service, mock_httpx_client
 async def test_run_prompt_success(intelligence_service, mock_httpx_client):
     """Tests running a general prompt against Ollama."""
     prompt = "Summarize the key takeaways from this meeting."
-    
+
     # Mock the POST request for general prompt generation
     mock_client_instance = mock_httpx_client
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.json.return_value = {"response": "The key takeaways are X, Y, and Z."}
     mock_client_instance.post.return_value = mock_response
+
+    # Ensure the service is considered reachable for this test
+    intelligence_service._is_ollama_reachable = lambda: True
 
     result = await intelligence_service.run_prompt(prompt)
 

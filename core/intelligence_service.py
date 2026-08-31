@@ -116,7 +116,7 @@ class IntelligenceService:
             "pain_points": pain_points if pain_points else ["No specific pain points identified"],
             "needs": needs if needs else ["General improvements requested"],
             "sentiment": "Neutral (Simple Pattern Detection)",
-            "metadata": {"confidence": 0.5, "mode": "simple-patterns", "text_len": len(text)}
+            "metadata": {"confidence": 0.5, "mode": "safety-mock", "text_len": len(text)}
         }
 
     def _get_fallback_extraction(self, text: str) -> Dict[str, Any]:

@@ -7,7 +7,7 @@ FROM python:3.11-slim
 # Set the working directory
 WORKDIR /app
 
-# Copy the global requirements.txt. This file is assumed to be in the project root 
+# Copy the global requirements.txt. This file is assumed to be in the project root
 # and contains all necessary dependencies for both services.
 # 1. Copy the global requirements.txt from the root context
 COPY requirements.txt requirements.txt
@@ -15,14 +15,9 @@ COPY requirements.txt requirements.txt
 # 2. Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ... previous lines ...
-# Install the entire source code as an editable package
-COPY setup.py .
-RUN pip install -e . 
-
 # 3. Copy the core service source code
-COPY core/ . /app/
+COPY core/ .
 
 # 4. Define the command to run the core service
-# Assuming the main entry point is core/main.py
-CMD ["python", "main.py"]
+# Note: The worker service primarily handles background tasks triggered by the API service
+CMD ["python", "-c", "import time; time.sleep(86400)"]
