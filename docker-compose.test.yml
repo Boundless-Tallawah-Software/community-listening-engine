@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # Database service for testing
+  test-database:
+    image: postgres:14-alpine
+    container_name: community_test_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test_pass
+      POSTGRES_DB: community_test
+    ports:
+      - "5433:5432"
+    restart: "no"
+
+  # Test runner service
+  test-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: community_test_runner
+    user: "1000:1000"
+    environment:
+      DATABASE_URL: postgresql://postgres:test_pass@test-database:5432/community_test
+      PYTHONPATH: /app
+    volumes:
+      - ./tests:/app/tests
+      - .:/app
+    depends_on:
+      - test-database
+    command:
+      - pytest
+      - -v
+      - --tb=short
+      - --cov=.
+      - --cov-report=html
+      - --cov-report=term-missing
+    restart: "no"
+
+volumes:
+  test_db_data:
