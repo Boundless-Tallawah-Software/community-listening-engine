@@ -1,6 +1,10 @@
+import sys
+import os
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Request
 import uuid
-import os
 from datetime import datetime
 from core.transcription_service import TranscriptionService
 from core.intelligence_service import IntelligenceService

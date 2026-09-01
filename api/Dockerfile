@@ -7,18 +7,19 @@ FROM python:3.11-slim
 # Set the working directory
 WORKDIR /app
 
-# 1. Copy the global requirements.txt from the root context
-# This is the single source of truth for dependencies.
+# Copy the requirements.txt from the project root context
 COPY requirements.txt requirements.txt
 
-# 2. Install dependencies
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 3. Copy all source code for the API service from the local directory
-# This copies the contents of the 'api' and 'core' folders into /app.
-COPY api/ .
-COPY core/ .
+# Copy the entire source tree from the build context
+# This ensures both api and core modules are available
+COPY . .
 
-# 4. Define the command to run the API service
-# Assuming the main entry point is api/main.py and uses FastAPI.
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Set PYTHONPATH to use absolute import paths
+ENV PYTHONPATH=/app
+
+# Define the command to run the API service
+# The main.py is in api/ directory
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

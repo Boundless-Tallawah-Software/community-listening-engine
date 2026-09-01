@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 import sqlite3
 from contextlib import contextmanager
-from api.webhooks import router as webhook_router
+from .webhooks import router as webhook_router
 import os
 
 app = FastAPI(title="Community Listening Engine API")
