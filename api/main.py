@@ -1,10 +1,11 @@
-from fastapi import FastAPI, HTTPException, Request
-import sqlite3
-from contextlib import contextmanager
-from .webhooks import router as webhook_router
-import os
-
-app = FastAPI(title="Community Listening Engine API")
+  from fastapi import FastAPI, HTTPException, Request, FileResponse
+  import sqlite3
+  from contextlib import contextmanager
+  from fastapi.staticfiles import StaticFiles
+  from .webhooks import router as webhook_router
+  import os
+  
+  app = FastAPI(title="Community Listening Engine API")
 
 # Include the Webhook routes into the main application with /webhooks prefix
 app.include_router(webhook_router, prefix="/webhooks")
@@ -27,6 +28,7 @@ async def health_check():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Health check failed: {str(e)}")
 
-@app.get("/")
+@app.get("/", include_in_schema=False)
 async def root():
-    return {"message": "Community Listening Engine API is running."}
+    # Serve the main index.html file for the UI on port 8880
+    return FileResponse("web/index.html")
