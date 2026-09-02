@@ -20,6 +20,11 @@ COPY . .
 # Set PYTHONPATH to use absolute import paths
 ENV PYTHONPATH=/app
 
+# Copy static assets for serving
+COPY web/dashboard/ web/dashboard/
+COPY web/prospect/ web/prospect/
+COPY web/ web/
+
 # Define the command to run the API service
 # The main.py is in api/ directory
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8880"]
