@@ -10,6 +10,9 @@ import os
 
 app = FastAPI(title="Community Listening Engine API")
 
+# Serve static files (CSS, JS)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # CORS middleware for frontend-backend communication
 app.add_middleware(
     CORSMiddleware,

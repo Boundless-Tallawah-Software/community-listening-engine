@@ -4,27 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Community Listening Engine - Prospect Entry</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/static/prospect.css">
     <link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Community Listening Engine</h1>
-            <p class="subtitle">Conversations to Client System</p>
         </header>
 
         <div class="info-banner">
             <p class="info-message">🎤 Voice input available via WhatsApp. Or simply fill out this form for manual entry.</p>
+            <p class="info-message">Conversations to Client System</p>
         </div>
 
         <main>
             <form id="prospectForm">
                 <div class="form-section">
                     <h2>Owner Information</h2>
-                    
+
                     <div class="form-group">
-                        <label for="ownerName">Owner Name *</label>
+                        <label for="ownerName">Owner Name</label>
                         <input type="text" id="ownerName" name="owner_name" required>
                     </div>
 
@@ -34,9 +34,9 @@
                     </div>
 
                     <div class="form-row">
-                        <div class="form-group">
-                            <label for="email">Email *</label>
-                            <input type="email" id="email" name="email" required>
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email">
                         </div>
                         <div class="form-group">
                             <label for="phone">Phone</label>
@@ -55,17 +55,18 @@
                     
                     <div class="form-group">
                         <label for="manualProcess">Manual Process *</label>
-                        <textarea id="manualProcess" name="manual_process" rows="4" placeholder="Describe the manual process you currently use..." required></textarea>
+                        <textarea id="manualProcess" name="manual_process" rows="6" placeholder="Describe the manual process you currently use..."></textarea>
                     </div>
 
                     <div class="form-group">
                         <label for="painPoint">Pain Point (in your words) *</label>
-                        <textarea id="painPoint" name="pain_point" rows="4" placeholder="Describe the problem or challenge you face..." required></textarea>
+                        <textarea id="painPoint" name="pain_point" rows="6" placeholder="Describe the problem or challenge you face..."></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="willingnessToPay">Willingness to Pay *</label>
-                        <select id="willingnessToPay" name="willingness_to_pay" required>
+                        <label for="willingnessToPay">Willingness to Pay <span class="optional-label">(Optional)</span></label>
+                        <p class="form-hint">This helps us tailor our outreach to your budget preferences.</p>
+                        <select id="willingnessToPay" name="willingness_to_pay">
                             <option value="">Select your budget range</option>
                             <option value="$100-$500">$100 - $500</option>
                             <option value="$500-$1,000">$500 - $1,000</option>
@@ -95,6 +96,34 @@
         </footer>
     </div>
 
-    <script src="app.js"></script>
+    <script src="/static/app.js"></script>
+    <script>
+        function showSuccessToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<span class="toast-content">${message}</span>`;
+            toast.style.display = 'block';
+            toast.style.animation = 'fadeInOut 4s forwards';
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
+        }
+
+        function showThankYouPage() {
+            form.style.display = 'none';
+            successMessage.style.display = 'block';
+            successMessage.innerHTML = `
+                <h2>Thank You!</h2>
+                <p>Your conversation details have been successfully submitted to our system.</p>
+                <p class="success-subtext">We'll use this information to generate personalized outreach and improve our community insights.</p>
+                <div class="dashboard-link">
+                    <a href="/dashboard">View Dashboard</a>
+                </div>
+            `;
+            window.scrollTo(0, 0);
+        }
+    </script>
 </body>
 </html>

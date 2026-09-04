@@ -28,9 +28,14 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (response.ok) {
-                // Hide form and show success message
-                form.style.display = 'none';
-                successMessage.style.display = 'block';
+                // Show toast notification and redirect to thank you page
+                if (typeof showSuccessToast === 'function') {
+                    showSuccessToast('✨ Thank you! Your form has been submitted successfully.');
+                }
+                setTimeout(() => {
+                    const successPage = successMessage.innerHTML;
+                    showThankYouPage();
+                }, 1500);
             } else {
                 const errorData = await response.json();
                 throw new Error(errorData.detail || 'Failed to submit form');
