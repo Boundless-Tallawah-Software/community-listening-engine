@@ -7,11 +7,16 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from .webhooks import router as webhook_router
 import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import os
+from typing import Optional
 
 app = FastAPI(title="Community Listening Engine API")
 
-# Serve static files (CSS, JS)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Serve static files (CSS, JS, Dashboard assets)
+app.mount("/static", StaticFiles(directory="api/static"), name="static")
 
 # CORS middleware for frontend-backend communication
 app.add_middleware(
@@ -58,7 +63,53 @@ async def prospect():
 # Serve dashboard at "/dashboard"
 @app.get("/dashboard", include_in_schema=False)
 async def dashboard():
-    return FileResponse("web/dashboard/index.html")
+    return FileResponse("dashboard/index.html")
+
+def send_prospect_confirmation_email(email: str, data: dict) -> bool:
+    """Send confirmation email to prospect."""
+    try:
+        smtp_server = os.environ.get("SMTP_SERVER", "localhost")
+        smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+        smtp_username = os.environ.get("SMTP_USERNAME", "")
+        smtp_password = os.environ.get("SMTP_PASSWORD", "")
+
+        if not smtp_username or not smtp_password:
+            # Skip email if credentials not configured
+            return True
+
+        # Create email message
+        msg = MIMEMultipart("alternative")
+        msg["From"] = smtp_username
+        msg["To"] = email
+        msg["Subject"] = "Conversation Submitted - Community Listening Engine"
+
+        email_body = f"""
+Thank you for submitting your conversation details to the Community Listening Engine!
+
+Your submission has been successfully recorded in our system. 
+
+Business Type: {data.get('business_type')}
+Industry: {data.get('industry')}
+{f'Phone: {data.get("phone")}' if data.get("phone") else ''}
+
+We'll be in touch soon with personalized information relevant to your business.
+
+Best regards,
+Community Listening Engine Team
+"""
+
+        msg.attach(MIMEText(email_body, "plain"))
+
+        # Send email
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_username, smtp_password)
+            server.send_message(msg)
+
+        return True
+    except Exception as e:
+        print(f"Email sending failed (non-critical): {str(e)}")
+        return False
 
 @app.post("/api/prospects", include_in_schema=False)
 async def create_prospect(data: dict):
@@ -83,6 +134,10 @@ async def create_prospect(data: dict):
 
         # Close database connection
         db_manager.close()
+
+        # Send confirmation email if email is provided
+        if data.get("email"):
+            send_prospect_confirmation_email(data.get("email"), data)
 
         return {"status": "success", "message": "Prospect created successfully"}
     except Exception as e:
