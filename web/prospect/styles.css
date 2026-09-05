@@ -139,6 +139,7 @@ header h1 {
     border-radius: var(--radius-lg);
     padding: var(--spacing-stack-md) var(--spacing-stack-lg);
     margin-bottom: var(--spacing-stack-lg);
+    text-align: center;
 }
 
 .info-message {
