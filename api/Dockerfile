@@ -21,11 +21,16 @@ COPY . .
 ENV PYTHONPATH=/app
 
 # Copy static assets for serving
-RUN mkdir -p /app/static
+RUN mkdir -p /app/static/css /app/static/js /app/dashboard
 
 # Copy static files to the correct location
 COPY web/prospect/styles.css /app/static/prospect.css
 COPY web/prospect/app.js /app/static/app.js
+
+# Copy dashboard assets
+COPY web/styles.css /app/static/css/dashboard.css
+COPY web/app.js /app/static/js/dashboard.js
+COPY web/dashboard /app/dashboard/
 
 # Define the command to run the API service
 # The main.py is in api/ directory
