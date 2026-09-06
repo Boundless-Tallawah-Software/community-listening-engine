@@ -16,7 +16,7 @@ from typing import Optional
 app = FastAPI(title="Community Listening Engine API")
 
 # Serve static files (CSS, JS, Dashboard assets)
-app.mount("/static", StaticFiles(directory="api/static"), name="static")
+app.mount("/static", StaticFiles(directory="/app/static"), name="static")
 
 # CORS middleware for frontend-backend communication
 app.add_middleware(
@@ -64,6 +64,12 @@ async def prospect():
 @app.get("/dashboard", include_in_schema=False)
 async def dashboard():
     return FileResponse("dashboard/index.html")
+
+# Serve thank you page at "/thank-you"
+@app.get("/thank-you", include_in_schema=False)
+async def thank_you_page():
+    """Display thank you page after successful submission."""
+    return FileResponse("web/thank-you/index.html")
 
 def send_prospect_confirmation_email(email: str, data: dict) -> bool:
     """Send confirmation email to prospect."""
