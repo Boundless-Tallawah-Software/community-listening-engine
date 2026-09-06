@@ -21,5 +21,8 @@ Issues:
 2. [x] Fix: Prospects form: Remove "Willingness to Pay"
 3. [x] Fix: Prospects form: Remove "Conversations to Client System" text. 
 4. [x] Fix: Prospects form: Show Thank You page.
-5. [ ] Fix: Thank you page: Change SVG checkmark into emoji checkmark.
+5. [x] Fix: Thank you page: Change SVG checkmark into emoji checkmark.
+6. [ ] Add a button for WhatsApp?
+
+
 

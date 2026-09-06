@@ -10,13 +10,18 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import os
 from typing import Optional
+
+# Determine if we're running in production mode
+# In development/test, this defaults to False unless explicitly set
+production_mode = os.environ.get("SERVER_MODE") == "production"
 
 app = FastAPI(title="Community Listening Engine API")
 
-# Serve static files (CSS, JS, Dashboard assets)
-app.mount("/static", StaticFiles(directory="/app/static"), name="static")
+# Serve static files in production only, or always if files exist
+if (os.path.exists("static") and not production_mode) or \
+   (os.path.exists("./static")):
+    app.mount("/static", StaticFiles(directory="./static"), name="static")
 
 # CORS middleware for frontend-backend communication
 app.add_middleware(
