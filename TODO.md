@@ -20,4 +20,6 @@ Issues:
 1. [x] Fix: Dashboard has no stylesheets applied
 2. [x] Fix: Prospects form: Remove "Willingness to Pay"
 3. [x] Fix: Prospects form: Remove "Conversations to Client System" text. 
-# 4. [] Fix: Prospects form: Place large text area
+4. [x] Fix: Prospects form: Show Thank You page.
+5. [ ] Fix: Thank you page: Change SVG checkmark into emoji checkmark.
+
