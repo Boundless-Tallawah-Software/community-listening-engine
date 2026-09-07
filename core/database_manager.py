@@ -1,79 +1,250 @@
 import sqlite3
-import os
-from datetime import datetime
-import uuid
+import json
+from typing import List, Dict, Optional
+from threading import local
+
+_thread_local = local()
 
 class DatabaseManager:
-    """
-    Handles all database interactions for the Community Listening Engine.
-    Ensures thread-safe connections and enforces schema constraints.
-    """
-    def __init__(self, db_path: str = "community_listening_engine/data/engine.db"):
-        # Use absolute path to avoid resolution issues in background tasks
-        self.db_path = os.path.abspath(db_path)
+    """Manages database operations for the community listening engine."""
+
+    def __init__(self, db_path: str = ":memory:"):
+        """
+        Initialize the database manager.
+
+        Args:
+            db_path: Path to the SQLite database file or ":memory:" for in-memory database
+        """
+        self.db_path = db_path
 
     def _get_connection(self):
-        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
-        return sqlite3.connect(self.db_path)
+        """Get or create a connection for the current thread."""
+        if not hasattr(_thread_local, 'conn') or _thread_local.conn is None:
+            _thread_local.conn = sqlite3.connect(self.db_path)
+            cursor = _thread_local.conn.cursor()
 
-    def get_or_create_prospect(self, contact_info: str, source: str = "WhatsApp") -> str:
+            # Create tables if they don't exist
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS prospects (
+                    id TEXT PRIMARY KEY,
+                    contact_info TEXT NOT NULL,
+                    source TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS interactions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    prospect_id TEXT NOT NULL,
+                    sender_number TEXT NOT NULL,
+                    message_type TEXT NOT NULL,
+                    content TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (prospect_id) REFERENCES prospects (id)
+                )
+            """)
+
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS insights (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    prospect_id TEXT NOT NULL,
+                    insight_json TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (prospect_id) REFERENCES prospects (id)
+                )
+            """)
+
+            _thread_local.conn.commit()
+
+        return _thread_local.conn
+
+    def get_or_create_prospect(self, contact_info: str, source: str = "Unknown") -> str:
         """
-    Retrieves the ID of an existing prospect or creates a new one based on contact info.
-    Returns: The UUID string for the prospect.
-    """
-        with self._get_connection() as conn:
-            cursor = conn.execute("SELECT id FROM prospects WHERE contact_info = ?", (contact_info,))
-            row = cursor.fetchone()
-            if row:
-                return row[0]
+        Get an existing prospect or create a new one.
 
-            new_id = str(uuid.uuid4())
-            conn.execute(
-                "INSERT INTO prospects (id, name, contact_info, source) VALUES (?, ?, ?, ?)",
-                (new_id, "New Prospect", contact_info, source)
+        Args:
+            contact_info: The contact information (phone number, email, etc.)
+            source: The source channel (WhatsApp, Facebook, Email, etc.)
+
+        Returns:
+            The prospect ID
+        """
+        conn = self._get_connection()
+        cursor = conn.cursor()
+
+        # Try to find existing prospect
+        cursor.execute(
+            "SELECT id FROM prospects WHERE contact_info = ? AND source = ?",
+            (contact_info, source)
+        )
+        result = cursor.fetchone()
+
+        if result:
+            prospect_id = result[0]
+        else:
+            # Create new prospect
+            cursor.execute(
+                "INSERT INTO prospects (id, contact_info, source) VALUES (?, ?, ?)",
+                (f"prospect-{contact_info}-{source}", contact_info, source)
             )
-            conn.commit()
-            return new_id
-
-    def save_interaction(self, sender_number: str, message_type: str, content: str, prospect_id: str = None, metadata: str = None):
-        """
-        Persists an incoming message interaction to the conversation_logs table.
-        """
-        if not prospect_id:
-            prospect_id = self.get_or_create_prospect(sender_number)
-
-        query = """
-        INSERT INTO conversation_logs 
-        (id, prospect_id, input_method, raw_content, extraction_json, created_at)
-        VALUES (?, ?, ?, ?, ?, ?)
-        """
-        log_id = str(uuid.uuid4())
-        with self._get_connection() as conn:
-            conn.execute(query, (log_id, prospect_id, message_type, content, metadata, datetime.utcnow().isoformat()))
+            prospect_id = f"prospect-{contact_info}-{source}"
             conn.commit()
 
-    def save_insight(self, prospect_id: str, insight_json: str):
-        """
-        Links extracted intelligence findings to the engagement history.
-        """
-        query = """
-        INSERT INTO engagement_analytics (id, prospect_id, interaction_type, device_type, is_successful, created_at)
-        VALUES (?, ?, 'insight_extraction', 'web', 1, ?)
-        """
-        event_id = str(uuid.uuid4())
-        with self._get_connection() as conn:
-            conn.execute(query, (event_id, prospect_id, datetime.utcnow().isoformat()))
-            conn.commit()
+        return prospect_id
 
-    def get_recent_logs(self, limit: int = 10):
-        """Retrieves the most recent logs for monitoring."""
-        query = "SELECT timestamp, sender_number, message_type FROM conversation_logs ORDER BY timestamp DESC LIMIT ?"
-        with self._get_connection() as conn:
-            cursor = conn.execute(query, (limit,))
-            return [{"timestamp": row[0], "sender": row[1], "type": row[2]} for row in cursor.fetchall()]
+    def save_interaction(
+        self,
+        sender_number: str,
+        message_type: str,
+        content: str
+    ) -> None:
+        """
+        Save a conversation interaction.
 
-    def get_logs_by_prospect(self, prospect_id: str):
-        query = "SELECT timestamp, raw_content FROM conversation_logs WHERE prospect_id = ? ORDER BY timestamp DESC"
-        with self._get_connection() as conn:
-            cursor = conn.execute(query, (prospect_id,))
-            return [row for row in cursor.fetchall()]
+        Args:
+            sender_number: The sender's phone number
+            message_type: The type of message (WhatsApp, Email, etc.)
+            content: The message content
+        """
+        conn = self._get_connection()
+        cursor = conn.cursor()
+
+        # Get or create prospect
+        prospect_id = self.get_or_create_prospect(sender_number, message_type)
+
+        # Save interaction
+        cursor.execute(
+            """INSERT INTO interactions (prospect_id, sender_number, message_type, content)
+               VALUES (?, ?, ?, ?)""",
+            (prospect_id, sender_number, message_type, content)
+        )
+
+        conn.commit()
+
+    def save_insight(self, prospect_id: str, insight_json: str) -> None:
+        """
+        Save an intelligence insight for a prospect.
+
+        Args:
+            prospect_id: The prospect ID
+            insight_json: JSON string containing the insight data
+        """
+        conn = self._get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """INSERT INTO insights (prospect_id, insight_json)
+               VALUES (?, ?)""",
+            (prospect_id, insight_json)
+        )
+
+        conn.commit()
+
+    def get_recent_analytics(self, limit: int = 10) -> List[Dict]:
+        """
+        Get recent analytics data.
+
+        Args:
+            limit: Maximum number of records to return
+
+        Returns:
+            List of analytics records
+        """
+        conn = self._get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT i.id, i.prospect_id, i.sender_number, i.message_type, i.content, i.created_at
+            FROM interactions i
+            ORDER BY i.created_at DESC
+            LIMIT ?
+        """, (limit,))
+
+        rows = cursor.fetchall()
+
+        return [
+            {
+                "id": row[0],
+                "prospect_id": row[1],
+                "sender_number": row[2],
+                "message_type": row[3],
+                "content": row[4],
+                "created_at": row[5]
+            }
+            for row in rows
+        ]
+
+    def get_recent_logs(self, limit: int = 10) -> List[Dict]:
+        """
+        Get recent conversation logs.
+
+        Args:
+            limit: Maximum number of records to return
+
+        Returns:
+            List of recent logs
+        """
+        conn = self._get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT i.id, i.prospect_id, i.sender_number, i.message_type, i.content, i.created_at
+            FROM interactions i
+            ORDER BY i.created_at DESC
+            LIMIT ?
+        """, (limit,))
+
+        rows = cursor.fetchall()
+
+        return [
+            {
+                "id": row[0],
+                "prospect_id": row[1],
+                "sender_number": row[2],
+                "message_type": row[3],
+                "content": row[4],
+                "created_at": row[5]
+            }
+            for row in rows
+        ]
+
+    def get_logs_by_prospect(self, prospect_id: str) -> List[Dict]:
+        """
+        Get all logs for a specific prospect.
+
+        Args:
+            prospect_id: The prospect ID
+
+        Returns:
+            List of logs for the prospect
+        """
+        conn = self._get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT i.id, i.prospect_id, i.sender_number, i.message_type, i.content, i.created_at
+            FROM interactions i
+            WHERE i.prospect_id = ?
+            ORDER BY i.created_at DESC
+        """, (prospect_id,))
+
+        rows = cursor.fetchall()
+
+        return [
+            {
+                "id": row[0],
+                "prospect_id": row[1],
+                "sender_number": row[2],
+                "message_type": row[3],
+                "content": row[4],
+                "created_at": row[5]
+            }
+            for row in rows
+        ]
+
+    def close(self):
+        """Close the database connection for the current thread."""
+        if hasattr(_thread_local, 'conn') and _thread_local.conn is not None:
+            _thread_local.conn.close()
+            _thread_local.conn = None
