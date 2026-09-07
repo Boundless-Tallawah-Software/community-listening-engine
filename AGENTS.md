@@ -378,4 +378,10 @@ python scripts/load_sample_data.py
 
 ---
 
+**Directory Guidance**
+
+> From now on, all new documentation (Markdown files) should be stored inside the `DOCUMENTS` folder. The README and AGENTS.md files remain directly in the repository root.
+
+---
+
 *Generated for Community Listening Engine repository | Last updated: [auto-generated]*
