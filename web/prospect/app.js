@@ -3,6 +3,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const successMessage = document.getElementById('successMessage');
     const submitButton = form.querySelector('button[type="submit"]');
 
+    // Success toast notification
+    function showSuccessToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<span class="toast-content">${message}</span>`;
+        toast.style.display = 'block';
+        toast.style.animation = 'fadeInOut 4s forwards';
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 4000);
+    }
+
+    // Error toast notification (error variant)
+    function showErrorToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast error';
+        toast.innerHTML = `<span class="toast-content">${message}</span>`;
+        toast.style.display = 'block';
+        toast.style.animation = 'fadeInOut 4s forwards';
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 4000);
+    }
+
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -28,16 +56,16 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (response.ok) {
-                // Hide form and show success message
-                form.style.display = 'none';
-                successMessage.style.display = 'block';
+                // Show toast notification and redirect to thank you page
+                showSuccessToast('✅ Your submission was successful!');
+                window.location.href = '/thank-you';
             } else {
                 const errorData = await response.json();
                 throw new Error(errorData.detail || 'Failed to submit form');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Error submitting form. Please try again.');
+            showErrorToast('❌ Error submitting form. Please try again later.');
             submitButton.disabled = false;
             submitButton.textContent = 'Submit Conversation';
         }

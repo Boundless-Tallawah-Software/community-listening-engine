@@ -4,27 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Community Listening Engine - Prospect Entry</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/static/prospect.css">
     <link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Community Listening Engine</h1>
-            <p class="subtitle">Conversations to Client System</p>
         </header>
 
-        <div class="info-banner">
-            <p class="info-message">🎤 Voice input available via WhatsApp. Or simply fill out this form for manual entry.</p>
+        <div class="info-banner" id="infoBanner">
+            <p class="info-message" id="infoMessage">{{ MESSAGE_TEXT }}</p>
+            <button class="close-banner" onclick="document.getElementById('infoBanner').style.display='none'" aria-label="Close">×</button>
         </div>
 
         <main>
             <form id="prospectForm">
                 <div class="form-section">
                     <h2>Owner Information</h2>
-                    
+
                     <div class="form-group">
-                        <label for="ownerName">Owner Name *</label>
+                        <label for="ownerName">Owner Name</label>
                         <input type="text" id="ownerName" name="owner_name" required>
                     </div>
 
@@ -34,9 +34,9 @@
                     </div>
 
                     <div class="form-row">
-                        <div class="form-group">
-                            <label for="email">Email *</label>
-                            <input type="email" id="email" name="email" required>
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email">
                         </div>
                         <div class="form-group">
                             <label for="phone">Phone</label>
@@ -54,25 +54,13 @@
                     <h2>Conversation Details</h2>
                     
                     <div class="form-group">
-                        <label for="manualProcess">Manual Process *</label>
-                        <textarea id="manualProcess" name="manual_process" rows="4" placeholder="Describe the manual process you currently use..." required></textarea>
+                        <label for="manualProcess">How do you work today? *</label>
+                        <textarea id="manualProcess" name="manual_process" rows="6" placeholder="Describe the process you currently use..."></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="painPoint">Pain Point (in your words) *</label>
-                        <textarea id="painPoint" name="pain_point" rows="4" placeholder="Describe the problem or challenge you face..." required></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="willingnessToPay">Willingness to Pay *</label>
-                        <select id="willingnessToPay" name="willingness_to_pay" required>
-                            <option value="">Select your budget range</option>
-                            <option value="$100-$500">$100 - $500</option>
-                            <option value="$500-$1,000">$500 - $1,000</option>
-                            <option value="$1,000-$5,000">$1,000 - $5,000</option>
-                            <option value="$5,000-$10,000">$5,000 - $10,000</option>
-                            <option value="$10,000+">$10,000+</option>
-                        </select>
+                        <label for="painPoint">Describe the challenge you want solved: *</label>
+                        <textarea id="painPoint" name="pain_point" rows="6" placeholder="Describe the problem or challenge you face..."></textarea>
                     </div>
                 </div>
 
@@ -95,6 +83,59 @@
         </footer>
     </div>
 
-    <script src="app.js"></script>
+    <script src="/static/app.js"></script>
+    <script>
+        // Set initial message - can be changed via API or environment variables
+        const infoMessage = document.getElementById('infoMessage');
+        
+        // Default message if no configuration
+        let defaultText = "🗂️ Owner Directory: Voice input available via WhatsApp. Or fill out form for manual entry.";
+        let finalMessage = defaultText;
+        
+        // Check if MESSAGE_TEXT environment variable is set
+        const envMessage = new URLSearchParams(window.location.search).get('MESSAGE');
+        if (envMessage) {
+            finalMessage = decodeURIComponent(envMessage);
+        } else {
+            // Optional: fetch from API endpoint
+            fetch('/api/banner-message')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.message) {
+                        finalMessage = data.message;
+                    }
+                })
+                .catch(() => {}); // Non-critical, use default
+        }
+        
+        infoMessage.textContent = finalMessage;
+
+        function showSuccessToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<span class="toast-content">${message}</span>`;
+            toast.style.display = 'block';
+            toast.style.animation = 'fadeInOut 4s forwards';
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
+        }
+
+        function showThankYouPage() {
+            form.style.display = 'none';
+            successMessage.style.display = 'block';
+            successMessage.innerHTML = `
+                <h2>Thank You!</h2>
+                <p>Your conversation details have been successfully submitted to our system.</p>
+                <p class="success-subtext">We'll use this information to generate personalized outreach and improve our community insights.</p>
+                <div class="dashboard-link">
+                    <a href="/dashboard">View Dashboard</a>
+                </div>
+            `;
+            window.scrollTo(0, 0);
+        }
+    </script>
 </body>
 </html>

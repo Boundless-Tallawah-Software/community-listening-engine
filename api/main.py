@@ -7,8 +7,21 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from .webhooks import router as webhook_router
 import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from typing import Optional
+
+# Determine if we're running in production mode
+# In development/test, this defaults to False unless explicitly set
+production_mode = os.environ.get("SERVER_MODE") == "production"
 
 app = FastAPI(title="Community Listening Engine API")
+
+# Serve static files in production only, or always if files exist
+if (os.path.exists("static") and not production_mode) or \
+   (os.path.exists("./static")):
+    app.mount("/static", StaticFiles(directory="./static"), name="static")
 
 # CORS middleware for frontend-backend communication
 app.add_middleware(
@@ -40,6 +53,21 @@ async def health_check():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Health check failed: {str(e)}")
 
+@app.get("/api/banner-message")
+async def get_banner_message():
+    """Get the info banner message for the prospect page."""
+    try:
+        default_msg = "🗂️ Owner Directory: Voice input via WhatsApp or manual form entry."
+        
+        # Get custom message from environment variable
+        custom_msg = os.environ.get("INFORMATION_MESSAGE")
+        if custom_msg:
+            return {"message": custom_msg}
+        else:
+            return {"message": default_msg}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get banner message: {str(e)}")
+
 # Serve root form at "/"
 @app.get("/", include_in_schema=False)
 async def root():
@@ -55,7 +83,59 @@ async def prospect():
 # Serve dashboard at "/dashboard"
 @app.get("/dashboard", include_in_schema=False)
 async def dashboard():
-    return FileResponse("web/dashboard/index.html")
+    return FileResponse("dashboard/index.html")
+
+# Serve thank you page at "/thank-you"
+@app.get("/thank-you", include_in_schema=False)
+async def thank_you_page():
+    """Display thank you page after successful submission."""
+    return FileResponse("web/thank-you/index.html")
+
+def send_prospect_confirmation_email(email: str, data: dict) -> bool:
+    """Send confirmation email to prospect."""
+    try:
+        smtp_server = os.environ.get("SMTP_SERVER", "localhost")
+        smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+        smtp_username = os.environ.get("SMTP_USERNAME", "")
+        smtp_password = os.environ.get("SMTP_PASSWORD", "")
+
+        if not smtp_username or not smtp_password:
+            # Skip email if credentials not configured
+            return True
+
+        # Create email message
+        msg = MIMEMultipart("alternative")
+        msg["From"] = smtp_username
+        msg["To"] = email
+        msg["Subject"] = "Conversation Submitted - Community Listening Engine"
+
+        email_body = f"""
+Thank you for submitting your conversation details to the Community Listening Engine!
+
+Your submission has been successfully recorded in our system. 
+
+Business Type: {data.get('business_type')}
+Industry: {data.get('industry')}
+{f'Phone: {data.get("phone")}' if data.get("phone") else ''}
+
+We'll be in touch soon with personalized information relevant to your business.
+
+Best regards,
+Community Listening Engine Team
+"""
+
+        msg.attach(MIMEText(email_body, "plain"))
+
+        # Send email
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_username, smtp_password)
+            server.send_message(msg)
+
+        return True
+    except Exception as e:
+        print(f"Email sending failed (non-critical): {str(e)}")
+        return False
 
 @app.post("/api/prospects", include_in_schema=False)
 async def create_prospect(data: dict):
@@ -80,6 +160,10 @@ async def create_prospect(data: dict):
 
         # Close database connection
         db_manager.close()
+
+        # Send confirmation email if email is provided
+        if data.get("email"):
+            send_prospect_confirmation_email(data.get("email"), data)
 
         return {"status": "success", "message": "Prospect created successfully"}
     except Exception as e:

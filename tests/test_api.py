@@ -58,6 +58,8 @@ def test_webhook_missing_identity():
     assert response.status_code == 400
     assert "Missing sender identity" in response.json()["detail"]
 
+
+
 if __name__ == "__main__":
     # Run tests manually if script is executed
     pytest.main([__file__])

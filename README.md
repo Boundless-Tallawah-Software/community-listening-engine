@@ -71,15 +71,19 @@ community_listening_engine/
 ### Local Development
 
 ```bash
-# Run API with hot reload
+# Run API with hot reload (static files will only serve if ./static exists)
 cd api
 uvicorn api.main:app --host 0.0.0.0 --port 8880 --reload
 
 # Run tests
-pytest
+pytest tests/
 
 # Run with coverage
-pytest --cov=. --cov-report=html
+pytest tests/ --cov=. --cov-report=html
+
+# Set production mode (requires explicit static files)
+export SERVER_MODE=production
+uvicorn api.main:app --host 0.0.0.0 --port 8880 --reload
 ```
 
 ### API Endpoints
@@ -150,23 +154,23 @@ API_KEY=your_api_key_here
 
 ## Testing
 
+See [TESTING.md](./TESTING.md) for full testing documentation.
+
 ```bash
-# Run all tests
-pytest
+# Run all tests (21 tests across 4 test files)
+pytest tests/ -v
 
-# Run with specific test file
-pytest tests/test_api.py
-
-# Run with coverage
+# Run with coverage  
 pytest --cov=. --cov-report=html
 ```
 
-## Documentation
+## Configuration
 
 - [Build Plan](./PLANS/Build%20Plan%20-%20Community%20Listening%20Engine.md)
 - [Database Schema](./PLANS/db-schema-sqlite-20260813.md)
 - [Docker Implementation](./PLANS/Community_Listening_Engine_Docker_Containerization_Plan.md)
 - [Agent Coordination](./AGENTS.md)
+- [Testing Guide](./TESTING.md)
 
 ## License
 

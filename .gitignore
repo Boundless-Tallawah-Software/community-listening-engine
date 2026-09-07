@@ -36,3 +36,7 @@ community_listening_engine.egg-info/dependency_links.txt
 community_listening_engine.egg-info/PKG-INFO
 community_listening_engine.egg-info/SOURCES.txt
 community_listening_engine.egg-info/top_level.txt
+
+# Codebase MCP
+.codebase-memory/artifact.json
+.codebase-memory/graph.db.zst
