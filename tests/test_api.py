@@ -1,7 +1,17 @@
-import httpx
 import pytest
 from fastapi.testclient import TestClient
-from community_listening_engine.api.main import app
+
+from api.main import app
+
+# Example for test_database_manager.py
+from core.database_manager import DatabaseManager
+
+# Example for test_intelligence_service.py
+from core.intelligence_service import IntelligenceService
+
+# Example for test_transcription_service.py
+from core.transcription_service import TranscriptionService
+
 
 client = TestClient(app)
 
@@ -43,11 +53,12 @@ def test_webhook_missing_identity():
         "api_type": "text",
         "body": "Where is the sender?"
     }
-    response = client.post("/webpoints/whatsapp", json=payload) # Intentionally wrong path to check routing or 404, but let's test actual error logic on correct path
-    # Testing error logic on correct path:
+    # Test error handling for missing sender identity on the correct path
     response = client.post("/webhooks/whatsapp", json={"id": "no_from"})
     assert response.status_code == 400
     assert "Missing sender identity" in response.json()["detail"]
+
+
 
 if __name__ == "__main__":
     # Run tests manually if script is executed
