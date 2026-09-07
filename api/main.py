@@ -53,6 +53,21 @@ async def health_check():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Health check failed: {str(e)}")
 
+@app.get("/api/banner-message")
+async def get_banner_message():
+    """Get the info banner message for the prospect page."""
+    try:
+        default_msg = "🗂️ Owner Directory: Voice input via WhatsApp or manual form entry."
+        
+        # Get custom message from environment variable
+        custom_msg = os.environ.get("INFORMATION_MESSAGE")
+        if custom_msg:
+            return {"message": custom_msg}
+        else:
+            return {"message": default_msg}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get banner message: {str(e)}")
+
 # Serve root form at "/"
 @app.get("/", include_in_schema=False)
 async def root():

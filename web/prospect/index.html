@@ -13,8 +13,9 @@
             <h1>Community Listening Engine</h1>
         </header>
 
-        <div class="info-banner">
-            <p class="info-message">{{ INFO_MESSAGE | default("🗂️ Fill out all fields to submit your conversation insights.") }}</p>
+        <div class="info-banner" id="infoBanner">
+            <p class="info-message" id="infoMessage">{{ MESSAGE_TEXT }}</p>
+            <button class="close-banner" onclick="document.getElementById('infoBanner').style.display='none'" aria-label="Close">×</button>
         </div>
 
         <main>
@@ -84,6 +85,31 @@
 
     <script src="/static/app.js"></script>
     <script>
+        // Set initial message - can be changed via API or environment variables
+        const infoMessage = document.getElementById('infoMessage');
+        
+        // Default message if no configuration
+        let defaultText = "🗂️ Owner Directory: Voice input available via WhatsApp. Or fill out form for manual entry.";
+        let finalMessage = defaultText;
+        
+        // Check if MESSAGE_TEXT environment variable is set
+        const envMessage = new URLSearchParams(window.location.search).get('MESSAGE');
+        if (envMessage) {
+            finalMessage = decodeURIComponent(envMessage);
+        } else {
+            // Optional: fetch from API endpoint
+            fetch('/api/banner-message')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.message) {
+                        finalMessage = data.message;
+                    }
+                })
+                .catch(() => {}); // Non-critical, use default
+        }
+        
+        infoMessage.textContent = finalMessage;
+
         function showSuccessToast(message) {
             const toast = document.createElement('div');
             toast.className = 'toast';
