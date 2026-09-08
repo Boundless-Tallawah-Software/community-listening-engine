@@ -40,3 +40,6 @@ community_listening_engine.egg-info/top_level.txt
 # Codebase MCP
 .codebase-memory/artifact.json
 .codebase-memory/graph.db.zst
+
+# Node
+node_modules/
