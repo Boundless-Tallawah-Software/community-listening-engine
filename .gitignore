@@ -43,3 +43,6 @@ community_listening_engine.egg-info/top_level.txt
 
 # Node
 node_modules/
+
+# Local data
+.env
