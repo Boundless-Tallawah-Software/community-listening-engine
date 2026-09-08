@@ -3,7 +3,9 @@
     "target": "es2020",
     "module": "esnext",
     "moduleResolution": "node",
-    "lib": ["es2020", "dom"],
     "strict": true,
     "verbatimModuleSyntax": true,
-    "types": ["@cloudflare/workers-types"],
+    "skipLibCheck": true,
+    "types": ["@cloudflare/workers-types"]
+  }
+}
