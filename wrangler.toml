@@ -15,7 +15,7 @@ bucket_name = "listen-audio"
 [[kv_namespaces]]
 binding = "CACHE"
 
-[[queue_producers]]
+[[queues.producers]]
 binding = "JOBS"
 queue = "transcription"
 
