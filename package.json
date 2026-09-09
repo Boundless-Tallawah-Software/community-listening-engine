@@ -9,7 +9,7 @@
   },
   "scripts": {
       "lint": "echo 'Linting skipped'",
-  "test": "echo 'No tests to run'",
+  "test": "echo 'No tests to run'"
   },
   "repository": {
     "type": "git",
