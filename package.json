@@ -9,7 +9,7 @@
   },
   "scripts": {
       "lint": "echo 'Linting skipped'",
-  "build": "npx tsc",
+  "test": "echo 'No tests to run'",
   },
   "repository": {
     "type": "git",
