@@ -22,5 +22,5 @@ queue = "transcription"
 [ai]
 binding = "AI"
 
-[[triggers]]
-routes = ["*"]
+# [[triggers]]
+# routes = ["*"]
