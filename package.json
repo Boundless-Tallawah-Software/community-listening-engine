@@ -1,0 +1,29 @@
+{
+  "name": "community_listening_engine",
+  "version": "1.0.0",
+  "description": "A conversation-to-client system designed to book, guide, and capture workflow conversations with business owners.",
+  "main": "index.js",
+  "type": "module",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Boundless-Tallawah-Software/community-listening-engine.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Boundless-Tallawah-Software/community-listening-engine/issues"
+  },
+  "homepage": "https://github.com/Boundless-Tallawah-Software/community-listening-engine#readme",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260908.1",
+    "typescript": "^5.5.4"
+  }
+}
+

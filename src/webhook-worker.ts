@@ -1,0 +1,26 @@
+// @ts-nocheck
+
+import type { Env } from "./types";
+
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    const form = await request.formData();
+    const audioFile = form.get("audio");
+    if (!(audioFile instanceof File)) {
+      return new Response("Missing audio", { status: 400 });
+    }
+
+    const transcript = await transcribeAudio(audioFile, env, ctx);
+    const insights = await extractInsights(transcript, env, ctx);
+
+    // Store to D1
+    await env.DB.prepare(
+      `INSERT INTO insights (transcript, payload) VALUES (?, ?)`
+    ).bind(transcript, JSON.stringify(insights)).run();
+
+    return new Response(
+      JSON.stringify({ transcript, insights }),
+      { headers: { "content-type": "application/json" } }
+    );
+  },
+};

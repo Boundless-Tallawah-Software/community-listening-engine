@@ -1,0 +1,26 @@
+# Cloudflare Workers / AI configuration
+name = "community-listening-engine"
+main = "src/webhook-worker.ts"
+account_id = "${ACCOUNT_ID}"
+compatibility_date = "2024-09-07"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "listen_engine_db"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "listen-audio"
+
+[[kv_namespaces]]
+binding = "CACHE"
+
+[[queue_producers]]
+binding = "JOBS"
+queue = "transcription"
+
+[ai]
+binding = "AI"
+
+[[triggers]]
+routes = ["*"]
