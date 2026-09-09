@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with: { node-version: '24' }
       - run: npm ci
       - run: npm run lint
   test:
@@ -62,7 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with: { node-version: '24' }
       - run: npm ci
       - run: npm test
       - run: npm run build
@@ -73,7 +73,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with: { node-version: '24' }
       - run: npm ci
       - name: Publish preview
         env: { CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}, CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }} }
@@ -85,7 +85,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with: { node-version: '24' }
       - run: npm ci
       - name: Publish
         env: { CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}, CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }} }
