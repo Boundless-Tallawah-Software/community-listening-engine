@@ -47,3 +47,7 @@ node_modules/
 # Local data
 .env
 expressions.txt
+
+# SED file
+PATCH_WRAPPER
+
