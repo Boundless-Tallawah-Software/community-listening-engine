@@ -1,0 +1,43 @@
+lockfile_version: '1'
+apm_version: 0.30.0
+dependencies: []
+deployments:
+- kind: uri
+  target: mcp
+  value: io.github.github/github-mcp-server
+  runtime: claude
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: null
+- kind: uri
+  target: mcp
+  value: io.github.github/github-mcp-server
+  runtime: copilot
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: null
+- kind: uri
+  target: mcp
+  value: io.github.github/github-mcp-server
+  runtime: opencode
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: null
+mcp_servers:
+- io.github.github/github-mcp-server
+mcp_configs:
+  io.github.github/github-mcp-server:
+    name: io.github.github/github-mcp-server
+mcp_target_servers:
+  claude:
+  - io.github.github/github-mcp-server
+  copilot:
+  - io.github.github/github-mcp-server
+  opencode:
+  - io.github.github/github-mcp-server
