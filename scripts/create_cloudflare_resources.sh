@@ -1,76 +1,53 @@
-
+#!/usr/bin/env bash
 set -euo pipefail
+ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID:?}
+WRANGLER=wrangler
 
-ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID:?"CLOUDFLARE_ACCOUNT_ID not set"}
-WRANGLER_CMD=${WRANGLER_CMD:-wrangler}
-
-# Helper to check if a resource exists.
-# Returns 0 if exists, 1 otherwise.
 exists() {
-  local type="$1"
-  local name="$2"
+  local type="$1" name="$2"
   case "$type" in
     d1)
-      $WRANGLER_CMD d1 show $name --account-id $CLOUDFLARE_ACCOUNT_ID >/dev/null 2>&1
-      return $?;
-      ;;
+      $WRANGLER d1 show "$name" --account-id "$ACCOUNT_ID" > /dev/null 2>&1 ;;
     r2)
-      $WRANGLER_CMD r2 ls $name >/dev/null 2>&1
-      return $?;
-      ;;
+      $WRANGLER r2 ls "$name" > /dev/null 2>&1 ;;
     kv)
-      $WRANGLER_CMD kv:namespace list | grep -Fq "$name"
-      return $?;
-      ;;
+      $WRANGLER kv:namespace list | grep -Fq "$name" > /dev/null ;;
     queue)
-      $WRANGLER_CMD queue list | grep -Fq "$name"
-      return $?;
-      return $?;
-      ;;
-      ;;
+      $WRANGLER queues list | grep -Fq "$name" > /dev/null ;;
     *)
-    *)
-      echo "Unsupported type: $type"
-      echo "Unsupported type: $type"
-      return 1;
-      return 1;
-      ;;
-      ;;
+      return 1 ;;
   esac
-  esac
-}
+  return $?
 }
 
-
-# Create D1 database
+# D1 database
 if ! exists d1 listen_engine_db; then
   echo "Creating D1 database: listen_engine_db"
-  $WRANGLER_CMD d1 create listen_engine_db || true
+  $WRANGLER d1 create listen_engine_db || true
 else
   echo "D1 database already exists"
 fi
 
-# Create R2 bucket
+# R2 bucket
 if ! exists r2 listen-audio; then
   echo "Creating R2 bucket: listen-audio"
-  $WRANGLER_CMD r2 create listen-audio || true
+  $WRANGLER r2 bucket create listen-audio || true
 else
-  $WRANGLER_CMD kv:namespace create --binding CACHE "Cache for community listening" || true
-  $WRANGLER_CMD kv:namespace create --binding CACHE "Cache for community listening" || true
-else
-else
-  echo "KV namespace CACHE already exists"
-  echo "KV namespace CACHE already exists"
-fi
+  echo "R2 bucket already exists"
 fi
 
+# KV namespace
+if ! exists kv CACHE; then
+  echo "Creating KV namespace CACHE"
+  $WRANGLER kv:namespace create CACHE "Cache for community listening" || true
+else
+  echo "KV namespace CACHE already exists"
+fi
 
-# Create Queue
-# Create Queue
+# Queue
 if ! exists queue transcription; then
-if ! exists queue transcription; then
-  echo "Creating Queue: transcription"
-  $WRANGLER_CMD queues create transcription || true
+  echo "Creating Queue transcription"
+  $WRANGLER queues create transcription || true
 else
   echo "Queue transcription already exists"
 fi
