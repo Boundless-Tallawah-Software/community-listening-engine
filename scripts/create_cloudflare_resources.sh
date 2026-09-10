@@ -44,7 +44,7 @@ exists() {
 # Create D1 database
 if ! exists d1 listen_engine_db; then
   echo "Creating D1 database: listen_engine_db"
-  $WRANGLER_CMD d1 create listen_engine_db
+  $WRANGLER_CMD d1 create listen_engine_db || true
 else
   echo "D1 database already exists"
 fi
@@ -52,7 +52,7 @@ fi
 # Create R2 bucket
 if ! exists r2 listen-audio; then
   echo "Creating R2 bucket: listen-audio"
-  $WRANGLER_CMD r2 create listen-audio
+  $WRANGLER_CMD r2 create listen-audio || true
 else
   echo "R2 bucket already exists"
 fi
@@ -60,7 +60,7 @@ fi
 # Create KV namespace
 if ! exists kv CACHE; then
   echo "Creating KV namespace CACHE"
-  $WRANGLER_CMD kv:namespace create --binding CACHE "Cache for community listening"
+  $WRANGLER_CMD kv:namespace create --binding CACHE "Cache for community listening" || true
 else
   echo "KV namespace CACHE already exists"
 fi
@@ -68,7 +68,7 @@ fi
 # Create Queue
 if ! exists queue transcription; then
   echo "Creating Queue: transcription"
-  $WRANGLER_CMD queue create transcription
+  $WRANGLER_CMD queue create transcription || true
 else
   echo "Queue transcription already exists"
 fi
