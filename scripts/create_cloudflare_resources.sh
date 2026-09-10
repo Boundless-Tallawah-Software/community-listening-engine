@@ -1,5 +1,8 @@
-#!/usr/bin/env bash
-# create_cloudflare_resources.sh
+cat > .wrangler <<EOF
+name = "community-listening-engine"
+account_id = "$CLOUDFLARE_ACCOUNT_ID"
+compatibility_date = "2024-09-07"
+EOF
 # This script will create the Cloudflare resources needed by the Community Listening Engine.
 # It uses wrangler CLI. Ensure you are authenticated with:
 #   wrangler login or set CLOUDFLARE_ACCOUNT_ID & CLOUDFLARE_API_TOKEN.
