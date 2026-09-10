@@ -1,11 +1,3 @@
-cat > .wrangler <<EOF
-name = "community-listening-engine"
-account_id = "$CLOUDFLARE_ACCOUNT_ID"
-compatibility_date = "2024-09-07"
-EOF
-# This script will create the Cloudflare resources needed by the Community Listening Engine.
-# It uses wrangler CLI. Ensure you are authenticated with:
-#   wrangler login or set CLOUDFLARE_ACCOUNT_ID & CLOUDFLARE_API_TOKEN.
 
 set -euo pipefail
 
@@ -33,13 +25,22 @@ exists() {
     queue)
       $WRANGLER_CMD queue list | grep -Fq "$name"
       return $?;
+      return $?;
+      ;;
       ;;
     *)
+    *)
+      echo "Unsupported type: $type"
       echo "Unsupported type: $type"
       return 1;
+      return 1;
+      ;;
       ;;
   esac
+  esac
 }
+}
+
 
 # Create D1 database
 if ! exists d1 listen_engine_db; then
@@ -54,21 +55,22 @@ if ! exists r2 listen-audio; then
   echo "Creating R2 bucket: listen-audio"
   $WRANGLER_CMD r2 create listen-audio || true
 else
-  echo "R2 bucket already exists"
-fi
-
-# Create KV namespace
-if ! exists kv CACHE; then
-  echo "Creating KV namespace CACHE"
+  $WRANGLER_CMD kv:namespace create --binding CACHE "Cache for community listening" || true
   $WRANGLER_CMD kv:namespace create --binding CACHE "Cache for community listening" || true
 else
+else
+  echo "KV namespace CACHE already exists"
   echo "KV namespace CACHE already exists"
 fi
+fi
+
 
 # Create Queue
+# Create Queue
+if ! exists queue transcription; then
 if ! exists queue transcription; then
   echo "Creating Queue: transcription"
-  $WRANGLER_CMD queue create transcription || true
+  $WRANGLER_CMD queues create transcription || true
 else
   echo "Queue transcription already exists"
 fi
