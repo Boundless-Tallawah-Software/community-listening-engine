@@ -8,9 +8,10 @@
     "test": "tests"
   },
   "scripts": {
-      "lint": "echo 'Linting skipped'",
-  "build": "wrangler build",
-
+    "lint": "echo 'Linting skipped'",
+    "build": "wrangler build",
+    "test": "echo 'No tests to run'"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Boundless-Tallawah-Software/community-listening-engine.git"
@@ -27,4 +28,5 @@
     "typescript": "^5.5.4"
   }
 }
+
 
