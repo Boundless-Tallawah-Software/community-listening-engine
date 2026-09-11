@@ -39,7 +39,7 @@ fi
 # KV namespace
 if ! exists kv CACHE; then
   echo "Creating KV namespace CACHE"
-  $WRANGLER kv:namespace create CACHE "Cache for community listening" || true
+  $WRANGLER kv:namespace create CACHE || true
 else
   echo "KV namespace CACHE already exists"
 fi
