@@ -1,5 +1,5 @@
-import { jest } from '@jest/globals';
-
+import pkg from '@jest/globals';
+const { test, expect, describe } = pkg;
 // Placeholder for D1 stub
 class FakeD1 {
   private inserts: any[] = [];
@@ -29,7 +29,7 @@ const env = {
 import worker from '../src/webhook-worker.ts';
 
 describe('webhook-worker', () => {
-  it('returns 400 if no audio file', async () => {
+  test('returns 400 if no audio file', async () => {
     const form = new FormData();
     const request = new Request('https://example.com', {
       method: 'POST',
@@ -41,7 +41,7 @@ describe('webhook-worker', () => {
     expect(text).toContain('Missing audio');
   });
 
-  it('processes audio and stores insight', async () => {
+  test('processes audio and stores insight', async () => {
     const blob = new Blob(['test'], { type: 'audio/webm' });
     const form = new FormData();
     form.set('audio', blob);
