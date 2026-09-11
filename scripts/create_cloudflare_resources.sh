@@ -13,7 +13,9 @@ fi
 $WRANGLER r2 bucket create listen-audio || true
 
 # KV namespace
-$WRANGLER kv:namespace create CACHE || true
+# KV namespace
+# KV namespace
+$WRANGLER kv namespace create CACHE || true
 
 # Queue
 if ! $WRANGLER queues list | grep -Fq "transcription" > /dev/null 2>&1; then
