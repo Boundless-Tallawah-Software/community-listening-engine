@@ -25,10 +25,11 @@
   "homepage": "https://github.com/Boundless-Tallawah-Software/community-listening-engine#readme",
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260908.1",
+    "jest": "^30.5.1",
+    "ts-jest": "^29.4.12",
     "ts-node": "^10.9.2"
   },
   "dependencies": {
-    "@jest/globals": "^30.5.1",
-    "jest": "^30.5.1"
+    "@jest/globals": "^30.5.1"
   }
 }
