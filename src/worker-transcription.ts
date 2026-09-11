@@ -7,7 +7,10 @@ export async function transcribeAudio(
   env: Env,
   ctx: ExecutionContext
 ): Promise<string> {
-  // In a real implementation this would call the Whisper model.
-  // Here we just return a placeholder.
-  return "transcribed text";
+// Use Workers AI Whisper API
+const result = await env.AI.run("@cf/openai/whisper", {
+  audio: Array.from(new Uint8Array(audioBlob)),
+  language: "en"
+});
+return result.chat_transcript;
 }

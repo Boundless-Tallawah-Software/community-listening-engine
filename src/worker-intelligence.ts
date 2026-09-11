@@ -7,6 +7,17 @@ export async function extractInsights(
   env: Env,
   ctx: ExecutionContext
 ): Promise<object> {
-  // Placeholder: return a fake insights object.
-  return { sentiment: "neutral", owner: "unknown" };
+const result = await env.AI.run("@cf/mistral-small-3.1-24b-instruct", {
+  messages: [
+    {
+      role: "system",
+      content: "Analyze the following text and extract pain points, needs, sentiment, and business details in JSON format."
+    },
+    {
+      role: "user",
+      content: transcript
+    }
+  ]
+});
+return result.response;
 }
