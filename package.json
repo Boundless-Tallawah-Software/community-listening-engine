@@ -10,7 +10,7 @@
   "scripts": {
     "lint": "echo 'Linting skipped'",
     "build": "wrangler build",
-    "test": "echo 'No tests to run'"
+    "test": "node -r ts-node/register tests/worker.test.ts"
   },
   "repository": {
     "type": "git",
@@ -25,7 +25,7 @@
   "homepage": "https://github.com/Boundless-Tallawah-Software/community-listening-engine#readme",
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260908.1",
-    "typescript": "^5.5.4"
+    "ts-node": "^10.9.1"
   }
 }
 
