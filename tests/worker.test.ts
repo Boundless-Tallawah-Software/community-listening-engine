@@ -15,7 +15,16 @@ class FakeD1 {
   get inserts() { return this.inserts; }
 }
 
-// Mock AI binding
+// Mock Env
+const env = {
+  AI: {} as any,
+  DB: new FakeD1() as any,
+  R2: {} as any,
+  CACHE: {} as any,
+  JOBS: {} as any
+} as any;
+
+// Add AI mock
 env.AI = {
   async run(model: string, opts: any) {
     if (model.includes('whisper')) {
