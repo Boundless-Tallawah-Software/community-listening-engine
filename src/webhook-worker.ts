@@ -1,9 +1,9 @@
 // @ts-nocheck
 
-import type { Env } from "./types";
-
+import { transcribeAudio } from './worker-transcription.ts';
+import { extractInsights } from './worker-intelligence.ts';
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+  async fetch(request: Request, env: any, ctx: ExecutionContext) {
     const form = await request.formData();
     const audioFile = form.get("audio");
     if (!(audioFile instanceof File)) {
@@ -13,7 +13,6 @@ export default {
     const transcript = await transcribeAudio(audioFile, env, ctx);
     const insights = await extractInsights(transcript, env, ctx);
 
-    // Store to D1
     await env.DB.prepare(
       `INSERT INTO insights (transcript, payload) VALUES (?, ?)`
     ).bind(transcript, JSON.stringify(insights)).run();
