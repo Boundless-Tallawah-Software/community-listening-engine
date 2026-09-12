@@ -15,13 +15,14 @@ class FakeD1 {
   get inserts() { return this.inserts; }
 }
 
-// Mock Env
-const env = {
-  AI: {},
-  DB: new FakeD1() as any,
-  R2: {} as any,
-  CACHE: {} as any,
-  JOBS: {} as any
+// Mock AI binding
+env.AI = {
+  async run(model: string, opts: any) {
+    if (model.includes('whisper')) {
+      return { chat_transcript: 'transcribed text' };
+    }
+    return { response: { sentiment: 'neutral' } };
+  }
 } as any;
 
 // Import the worker
