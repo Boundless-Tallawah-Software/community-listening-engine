@@ -1,7 +1,7 @@
 // @ts-nocheck
 
-import { transcribeAudio } from './worker-transcription.ts';
-import { extractInsights } from './worker-intelligence.ts';
+import { transcribeAudio } from './worker-transcription';
+import { extractInsights } from './worker-intelligence';
 export default {
   async fetch(request: Request, env: any, ctx: ExecutionContext) {
     const form = await request.formData();
