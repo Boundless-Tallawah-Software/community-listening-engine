@@ -23,4 +23,12 @@ queue = "transcription"
 binding = "AI"
 
 # [[triggers]]
+[[routes]]
+pattern = "/whatsapp"
+script = "community-listening-engine"
+
+[[queues.consumer]]
+name = "transcription-consumer"
+queue = "transcription"
+script = "consumer"
 # routes = ["*"]
