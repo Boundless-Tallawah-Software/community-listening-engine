@@ -2,7 +2,7 @@ import assert from 'assert';
 // Simple in‑memory D1 stub
 class FakeD1 {
   private inserts: any[] = [];
-  async prepare(sql: string) {
+  prepare(sql: string) {
     const self = this;
     return {
       bind: (...args: any[]) => ({
