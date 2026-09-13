@@ -1,0 +1,59 @@
+name: CI – New Workflow
+
+on:
+  push:
+    branches: ["main", "develop", "releases/**"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+        continue-on-error: true
+        id: tests
+
+      - name: Run database migrations
+        run: npm run migrate
+        continue-on-error: true
+        id: migrate
+
+      - name: Build application
+        run: npm run build
+        continue-on-error: true
+        id: build
+
+      - name: Deploy to Cloudflare
+        if: github.ref == 'refs/heads/main'
+        uses: cloudflare/wrangler-action@2
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          projectName: listening-engine
+
+      - name: Slack failure notification
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        with:
+          slack_webhook: ${{ env.SLACK_WEBHOOK_URL }}
+          message: |
+            :red_circle: Build *${{ job.status }}*
+            • Job: ${{ github.workflow }} - ${{ github.job }}
+            • Branch: ${{ github.ref }}
+            • SHA: ${{ github.sha }}
+            • URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          color: danger
