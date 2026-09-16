@@ -1,181 +1,192 @@
 # Community Listening Engine
 
-A conversation-to-client system designed to book, guide, and capture workflow conversations with business owners.
+A conversation‑to‑client system designed to book, guide, and capture workflow conversations with business owners.
 
-## Overview
+> **NOTE**:  The repository has moved from the original Python/FastAPI stack to a Node/TypeScript implementation.
+> The README has been completely rewritten to match the current codebase.
 
-This project transforms real-world conversations into market evidence for identifying the first paying engagement through:
+---
 
-- **Owner Directory**: Store contact info for identified business owners
-- **Outreach Generator**: Generate personalized outreach messages in the founder's natural voice
-- **Investigation Guide**: Checklist for 20-minute workflow investigations
-- **Conversation Log**: Capture business type, manual process, pain points, and willingness to pay
-- **Multi-Channel Input**: WhatsApp integration for receiving text/media inputs
-- **Voice Pipeline**: Local transcription (faster-whisper) and intelligence (Ollama)
-
-## Quick Start
-
-### Prerequisites
-
-- Docker & Docker Compose
-- Python 3.11+
-- Node.js (for local development)
-
-### Installation
+## Quick start
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone <repository‑url>
 cd community_listening_engine
 
-# Start all services
-docker-compose up -d
+# Create the .env file (copy example)
+cp .env.example .env
 
-# Check service health
+# Install dependencies (Node 20+ required)
+npm install
+
+# Build the client & server assets
+npm run build
+
+# Launch the services
+docker compose up -d
+
+# Verify everything is healthy
 curl http://localhost:8880/health
 ```
 
-### Access Points
+> The backend runs on **Node 20**.
+> Docker Compose pulls the official `node:20-alpine` image for the services.
 
-- **Prospect Form**: http://localhost:8880/prospect
-- **Dashboard**: http://localhost:8880/dashboard
-- **API Health**: http://localhost:8880/health
+### Port diagram
+
+| Service | Host Port | Description |
+|---------|-----------|-------------|
+| api      | 8880 | Node Express API + HTTP webhook endpoints |
+| worker   | 8890 | Background worker (queue consumer) |
+| static   | 80   | HTTP static files (only for production builds) |
+
+---
 
 ## Project Structure
 
 ```
 community_listening_engine/
-├── api/                     # FastAPI application
-│   ├── main.py             # API routes
-│   ├── webhooks.py         # Webhook handlers
-│   └── Dockerfile
-├── core/                    # Core business logic
-│   ├── database_manager.py # Database operations
-│   ├── intelligence_service.py
-│   ├── transcription_service.py
-│   └── Dockerfile
-├── web/                     # Frontend
-│   ├── index.html          # Root redirect
-│   ├── dashboard/          # Dashboard UI
-│   └── prospect/           # Prospect entry form
-├── data/                    # Data storage
-├── models/                  # Data models
-├── tests/                   # Test suite
-├── requirements.txt         # Python dependencies
-├── docker-compose.yml       # Container orchestration
-└── AGENTS.md                # Agent coordination
+├── src/                     # TypeScript source code (backend + workers)
+│   ├── api/                 # Express API (routes, middleware, handlers)
+│   ├── workers/             # Background workers (transcription, intelligence)
+│   ├── utils/               # Shared utilities, types, config
+│   └── index.ts             # Application bootstrap
+├── web/                     # Front‑end SPA (React‑style JavaScript)
+│   ├── index.html
+│   ├── dashboard/
+│   ├── prospect/
+│   └── thank-you/
+├── docker-compose.yml       # Services definition
+├── Dockerfile               # Build Docker image for the API
+├── .env.example             # Example environment variables
+├── package.json             # npm scripts & dependencies
+└── README.md
 ```
 
-## Development
+### API
 
-### Local Development
+- **Routes**
+  - `GET  /health` – Health check
+  - `POST /api/prospects` – Store prospect data
+  - `POST /webhooks/whatsapp` – WhatsApp webhook (currently stubbed)
+
+- **Data storage**
+  - Uses **PostgreSQL** via the `pg` library.
+  - The connection string is read from `DATABASE_URL` in `.env`.
+
+- **Background worker**
+  - Listens on a Redis queue (queue name `prospects`).
+  - Processes incoming prospects: logs to DB, triggers outreach notifications, etc.
+
+---
+
+## Local development
 
 ```bash
-# Run API with hot reload (static files will only serve if ./static exists)
-cd api
-uvicorn api.main:app --host 0.0.0.0 --port 8880 --reload
+# Hot‑reload API
+npm run dev:api            # Starts Express with ts-node-dev
 
-# Run tests
-pytest tests/
+# Run worker in dev mode
+npm run dev:worker         # Starts worker with nodemon
 
-# Run with coverage
-pytest tests/ --cov=. --cov-report=html
+# Spin up the full stack
+docker compose up
 
-# Set production mode (requires explicit static files)
-export SERVER_MODE=production
-uvicorn api.main:app --host 0.0.0.0 --port 8880 --reload
+# Watch TypeScript files and rebuild
+npm run watch
 ```
 
-### API Endpoints
+> The UI is served from the `web/` directory.
+> For local development, you can serve it with a simple static server:
 
 ```bash
-# Health check
-curl http://localhost:8880/health
-
-# Submit prospect data
-curl -X POST http://localhost:8880/api/prospects \
-  -H "Content-Type: application/json" \
-  -d '{
-    "owner_name": "John Smith",
-    "business_type": "Restaurant",
-    "email": "john@restaurant.com",
-    "phone": "+1234567890",
-    "industry": "Hospitality",
-    "manual_process": "Manual customer tracking",
-    "pain_point": "Losing customers during peak hours",
-    "willingness_to_pay": "$100-$500"
-  }'
+npm install -g serve
+serve web
 ```
 
-## Configuration
+---
 
-### Environment Variables
+## Docker
 
-```env
-DATABASE_URL=postgresql://postgres:password@localhost:5432/communitydb
-DATABASE_PATH=/app/data/community.db
-API_KEY=your_api_key_here
+You can use Docker Compose to run the full stack:
+
+```bash
+docker compose up          # All services
+docker compose down        # Stop everything
+docker compose exec api /bin/bash   # Interactive shell in API container
 ```
 
-### Docker Compose Services
+> **No Docker profiles** are used in this project.
+> If you need different deployment variants, create a separate `docker-compose.override.yml` or use environment variables.
 
-- **database**: PostgreSQL database (port 5432)
-- **api-service**: FastAPI application (port 8880)
-- **worker-service**: Background processing
-
-## Features in Progress
-
-### Phase 1 (MVP)
-- ✅ Prospect entry form
-- ✅ Frontend design system
-- ✅ WhatsApp webhook infrastructure
-- 🔄 Database persistence
-- 🔄 Dashboard UI integration
-
-### Phase 2 (Outreach & Intelligence)
-- [ ] Owner Directory CRUD operations
-- [ ] Outreach message generation
-- [ ] Investigation Guide UI
-- [ ] Local transcription integration
-
-### Phase 3 (Voice Pipeline)
-- [ ] Audio storage system
-- [ ] Whisper transcription
-- [ ] Ollama intelligence extraction
-- [ ] Voice note upload UI
-
-## Design System
-
-**Digital Atelier** - Corporate/Modern design with:
-- Primary: Navy #002366
-- Secondary: Gold #FFD100
-- Tertiary: Green #009639
-- Typography: Literata (headlines), Hanken Grotesk (body)
+---
 
 ## Testing
 
-See [TESTING.md](./TESTING.md) for full testing documentation.
+The test suite is written with **pytest** for the Python parts (database helpers) and **Jest** for the TypeScript parts.
 
 ```bash
-# Run all tests (21 tests across 4 test files)
-pytest tests/ -v
+# Run Python tests
+pytest tests/ -vv
 
-# Run with coverage  
-pytest --cov=. --cov-report=html
+# Run TypeScript / Jest tests
+npm run test
 ```
 
-## Configuration
+You can run both in one go:
 
-- [Build Plan](./PLANS/Build%20Plan%20-%20Community%20Listening%20Engine.md)
-- [Database Schema](./PLANS/db-schema-sqlite-20260813.md)
-- [Docker Implementation](./PLANS/Community_Listening_Engine_Docker_Containerization_Plan.md)
-- [Agent Coordination](./AGENTS.md)
-- [Testing Guide](./TESTING.md)
+```bash
+npm run test-all
+```
+
+---
+
+## Environment variables
+
+```env
+# .env.example
+PORT=8880
+DATABASE_URL=sqlite:///$PWD/database.sqlite
+REDIS_HOST=redis
+REDIS_PORT=6379
+API_KEY=your_secret_api_key
+```
+
+> All services read their configuration from the same `.env` file.
+> Adjust values for your environment (e.g., production, staging).
+
+---
+
+## Roadmap
+
+| Phase | Status | Description |
+|-------|--------|-------------|
+| **Phase 1 (MVP)** | ✅ | Prospect entry form, dashboard, basic webhook stubs, DB persistence |
+| **Phase 2 (Outreach & Intelligence)** | 🔍 | Owner directory CRUD, outreach generator, investigation guide |
+| **Phase 3 (Voice Pipeline)** | 🚧 | Audio upload UI, Whisper transcription, Ollama inference |
+
+---
+
+## Contributing
+
+1. Fork the repo.
+2. Create a feature branch (`feature/…`).
+3. Run tests locally (`npm run test-all`).
+4. Submit a pull request.
+
+Feel free to open issues for bugs or feature ideas.
+
+---
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT License – see the `LICENSE` file for details.
+
+---
 
 ## Support
 
-For questions or issues, refer to the implementation logs in the `IMPLEMENTATIONS/` folder.
+Questions can be asked on the repository's issue tracker or via the community Slack channel (link in README or `.env` example).
+
+---
