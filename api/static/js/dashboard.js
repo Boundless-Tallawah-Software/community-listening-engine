@@ -1,5 +1,5 @@
 /**
- * Digital Atelier - Community Listening Engine Frontend Logic
+ * Community Listening Engine Frontend Logic
  * Handles view switching, API fetching, and UI rendering.
  * @author Zoo
  * @last_updated 2026-09-01
