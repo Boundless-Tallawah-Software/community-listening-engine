@@ -164,7 +164,7 @@ API_KEY=your_secret_api_key
 |-------|--------|-------------|
 | **Phase 1 (MVP)** | ✅ | Prospect entry form, dashboard, basic webhook stubs, DB persistence |
 | **Phase 2 (Outreach & Intelligence)** | 🔍 | Owner directory CRUD, outreach generator, investigation guide |
-| **Phase 3 (Voice Pipeline)** | 🚧 | Audio upload UI, Whisper transcription, Ollama inference |
+| **Phase 3 (Voice Pipeline)** | ✅ | Audio upload UI, Whisper transcription, Ollama inference (now migrated to Cloudflare Workers AI) |
 
 ---
 
