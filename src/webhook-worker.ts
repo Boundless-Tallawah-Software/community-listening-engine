@@ -1,6 +1,7 @@
 // @ts-nocheck
 
 import type { Env } from './types';
+import type { QueueMessage } from "@cloudflare/workers-types";
 
 export default {
   async fetch(request: Request, env: any, ctx: ExecutionContext) {
