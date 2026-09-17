@@ -23,12 +23,7 @@ queue = "transcription"
 binding = "AI"
 
 # [[triggers]]
-[[routes]]
-pattern = "/whatsapp"
-script = "community-listening-engine"
-
-[[queues.consumer]]
-name = "transcription-consumer"
+[[queues.consumers]]
 queue = "transcription"
-script = "consumer"
-# routes = ["*"]
+max_batch_size = 50
+max_batch_timeout = 12000
