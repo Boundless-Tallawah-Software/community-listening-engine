@@ -379,9 +379,28 @@ npm run load-sample-data
 
 ---
 
-**Directory Guidance**
+## 📁 File Naming Convention Enforcement
 
-> From now on, all new documentation (Markdown files) should be stored inside the `DOCUMENTS` folder. The README and AGENTS.md files remain directly in the repository root.
+All new documentation files (Markdown files) should be stored inside the `DOCUMENTS` folder and follow this naming convention:
+
+### Format:
+```
+000-<file-name>.md
+```
+
+### Requirements:
+1. **Sequential numbering**: Files must start with 001-099, in logical order
+2. **Capitalized names**: Each word in the file name should be capitalized
+3. **Separators**: Use dashes between words (no underscores)
+4. **Extension**: All files must have .md extension
+
+### Examples:
+- `001-Cloudflare-Greenfield-Implementation.md`
+- `002-Cf-Api-Token.md`
+- `003-Cf-Api-Token-Permissions.md`
+- `004-Cloudflare-Architecture.md`
+
+This standard ensures consistent organization and easy navigation of documentation files.
 
 ---
 
