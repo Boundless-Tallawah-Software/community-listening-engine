@@ -190,3 +190,40 @@ MIT License – see the `LICENSE` file for details.
 Questions can be asked on the repository's issue tracker or via the community Slack channel (link in README or `.env` example).
 
 ---
+
+## Deployment to Subdomains
+
+The CI workflow supports deployment to different subdomains based on the target environment:
+
+1. **Default (production)**: Deploys to `ask.boundless-tallawah.com`
+2. **Staging**: Add `target=staging` parameter when triggering a manual deployment
+
+To manually deploy to staging, use:
+```bash
+gh workflow run ci.yml -r main -p target=staging
+```
+
+The domain configuration is handled in `wrangler.toml`, which defines routes for different environments.
+
+## Custom Domain Configuration
+
+To customize the domains for your specific setup:
+
+1. Update `wrangler.toml` to modify the route patterns:
+```toml
+[[routes]]
+pattern = "your-custom-domain.com"
+custom_domain = true
+```
+
+2. Make sure your domain is set up in Cloudflare with proper DNS records
+3. The deployment will automatically configure the custom domain with SSL certificates
+
+## Domain Details
+
+- **Production**: `ask.boundless-tallawah.com`
+- **Staging**: `stage-cle.boundless-tallawah.com`
+
+The staging environment uses a dedicated subdomain for testing before production deployment.
+
+---
