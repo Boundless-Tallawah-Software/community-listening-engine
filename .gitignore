@@ -46,3 +46,15 @@ node_modules/
 
 # Local data
 .env
+expressions.txt
+
+# SED file
+PATCH_WRAPPER
+
+.mcp.json
+.github/mcp.json
+.vscode/settings.json
+.vscode/settings.json
+
+# PI agent
+.pi/

@@ -1,0 +1,14 @@
+name: community_listening_engine
+version: 1.0.0
+description: APM project for community_listening_engine
+author: Hermes Agent
+targets:
+- claude
+- copilot
+- opencode
+dependencies:
+  apm: []
+  mcp:
+  - io.github.github/github-mcp-server
+includes: auto
+scripts: {}

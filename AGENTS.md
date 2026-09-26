@@ -8,6 +8,8 @@ This repository contains the **Community Listening Engine**, an AI-powered syste
 - Store and manage intelligence data
 - Provide APIs for consuming insights
 
+> **NOTE**: The repository has transitioned from a Python/FastAPI stack to a Node/TypeScript implementation. Documentation reflects the current TypeScript architecture.
+
 ---
 
 ## 🏗️ Repository Structure
@@ -17,21 +19,20 @@ This repository contains the **Community Listening Engine**, an AI-powered syste
 ├── AGENTS.md                    # This file - Agent coordination guide
 ├── Community Listening Engine/  # Main application module
 │   └── PLANS/                   # Generated plans and strategies
-├── api/                         # API endpoints and webhooks
-│   ├── main.py                 # API server entry point
-│   ├── webhooks.py             # Webhook handlers
-│   └── Dockerfile              # Container build instructions
-├── core/                        # Core business logic
-│   ├── database_manager.py     # Database operations
-│   ├── intelligence_service.py # AI intelligence processing
-│   └── transcription_service.py # Transcription functionality
-│   └── Dockerfile
-├── models/                      # Data models (currently empty)
-├── web/                         # Web interface/components
-├── data/                        # Data files and storage
-├── tests/                       # Test suite
-├── requirements.txt             # Python dependencies
-├── docker-compose.yml           # Container orchestration
+├── src/                         # TypeScript source code (backend + workers)
+│   ├── api/                     # Express API (routes, middleware, handlers)
+│   ├── workers/                 # Background workers (transcription, intelligence)
+│   ├── utils/                   # Shared utilities, types, config
+│   └── index.ts                 # Application bootstrap
+├── web/                         # Front‑end SPA (React‑style JavaScript)
+│   ├── index.html
+│   ├── dashboard/
+│   ├── prospect/
+│   └── thank-you/
+├── docker-compose.yml           # Services definition
+├── Dockerfile                   # Build Docker image for the API
+├── .env.example                 # Example environment variables
+├── package.json                 # npm scripts & dependencies
 └── .gitignore                   # Git ignore rules
 ```
 
@@ -43,10 +44,10 @@ This repository contains the **Community Listening Engine**, an AI-powered syste
 **Primary Domain**: Build systems, Docker, deployments
 
 **Permissions**:
-- ✅ Read/write to `api/`, `core/`, `web/` Dockerfiles
+- ✅ Read/write to `src/`, `web/` directories
 - ✅ Run build commands via builder tools
 - ✅ Manage `docker-compose.yml` updates
-- ✅ Handle dependency resolution in `requirements.txt`
+- ✅ Handle dependency resolution in `package.json`
 - ❌ Cannot modify source logic directly (unless elevated)
 
 **Key Tasks**:
@@ -61,17 +62,17 @@ This repository contains the **Community Listening Engine**, an AI-powered syste
 **Primary Domain**: Feature development, bug fixes, enhancements
 
 **Permissions**:
-- ✅ Full read/write to `api/`, `core/`, `web/` source files
-- ✅ Modify logic in `database_manager.py`, `intelligence_service.py`, `transcription_service.py`
+- ✅ Full read/write to `src/`, `web/` source files
+- ✅ Modify logic in `src/api/`, `src/workers/`
 - ✅ Create/update models in `models/` directory
 - ✅ Write unit tests in `tests/`
 - ✅ Update documentation and comments
 - ❌ Cannot modify Dockerfiles or compose files (use Builder Agent)
 
 **Key Tasks**:
-- Implementing new API endpoints in `api/main.py`
-- Enhancing intelligence algorithms in `core/intelligence_service.py`
-- Improving transcription accuracy in `core/transcription_service.py`
+- Implementing new API endpoints in `src/api/`
+- Enhancing intelligence algorithms in `src/workers/intelligence`
+- Improving transcription accuracy in `src/workers/transcription`
 - Writing and maintaining tests
 - Bug fixes across all modules
 
@@ -313,13 +314,13 @@ WEBHOOK_URL=https://yourdomain.com/api/webhooks
 docker-compose up -d --build
 
 # Run tests
-docker-compose run worker-service pytest
+npm run test
 
 # View specific service logs  
 docker-compose logs api/last 100
 
 # Check code style
-docker-compose run --build worker-service black --check .
+npm run lint
 ```
 
 ### For Builder Agents  
@@ -337,13 +338,13 @@ docker system prune -f
 ### For Data Agents
 ```bash
 # Process pending transcriptions  
-python scripts/process_queue.py
+npm run process-queue
 
 # Generate analytics report
-python core/intelligence_service.py --report daily_summary
+npm run generate-report
 
 # Load sample data
-python scripts/load_sample_data.py
+npm run load-sample-data
 ```
 
 ---
@@ -378,9 +379,28 @@ python scripts/load_sample_data.py
 
 ---
 
-**Directory Guidance**
+## 📁 File Naming Convention Enforcement
 
-> From now on, all new documentation (Markdown files) should be stored inside the `DOCUMENTS` folder. The README and AGENTS.md files remain directly in the repository root.
+All new documentation files (Markdown files) should be stored inside the `DOCUMENTS` folder and follow this naming convention:
+
+### Format:
+```
+000-<file-name>.md
+```
+
+### Requirements:
+1. **Sequential numbering**: Files must start with 001-099, in logical order
+2. **Capitalized names**: Each word in the file name should be capitalized
+3. **Separators**: Use dashes between words (no underscores)
+4. **Extension**: All files must have .md extension
+
+### Examples:
+- `001-Cloudflare-Greenfield-Implementation.md`
+- `002-Cf-Api-Token.md`
+- `003-Cf-Api-Token-Permissions.md`
+- `004-Cloudflare-Architecture.md`
+
+This standard ensures consistent organization and easy navigation of documentation files.
 
 ---
 
