@@ -4,9 +4,9 @@ main = "src/webhook-worker.ts"
 #account_id = "${CLOUDFLARE_ACCOUNT_ID}"
 compatibility_date = "2024-09-07"
 
-# Default production routes (will be overridden by CI for staging)
+# Default staging routes (will be overridden by CI for production)
 [[routes]]
-pattern = "ask.boundless-tallawah.com"
+pattern = "stage-ask.boundless-tallawah.com"
 custom_domain = true
 
 [[d1_databases]]
