@@ -73,16 +73,7 @@ jobs:
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          DEPLOY_TARGET: ${{ github.event.inputs.target || 'production' }}
+          DEPLOY_TARGET: ${{ github.event.inputs.target || 'staging' }}
         run: |
-          # Set domain based on deploy target
-          if [ "$DEPLOY_TARGET" = "staging" ]; then
-            echo "Deploying to staging domain"
-            # The wrangler.toml file is set up with a default staging domain
-          elif [ "$DEPLOY_TARGET" = "production" ]; then
-            echo "Deploying to production domain"
-            # Production domain will be handled via wrangler.toml default route
-          else
-            echo "Deploying to default domain (production)"
-          fi
-          wrangler deploy
+          chmod +x ./scripts/deploy.sh
+          ./scripts/deploy.sh $DEPLOY_TARGET
