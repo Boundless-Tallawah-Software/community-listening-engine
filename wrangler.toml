@@ -4,6 +4,11 @@ main = "src/webhook-worker.ts"
 #account_id = "${CLOUDFLARE_ACCOUNT_ID}"
 compatibility_date = "2024-09-07"
 
+# Staging/production routes are handled separately after deployment
+[[routes]]
+pattern = "stage-ask.boundless-tallawah.com/*"
+custom_domain = true
+
 [[d1_databases]]
 binding = "DB"
 database_name = "listen_engine_db"
