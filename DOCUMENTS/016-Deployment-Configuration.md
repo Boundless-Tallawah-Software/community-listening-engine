@@ -21,6 +21,12 @@ The deployment configuration is managed through:
 2. GitHub Actions workflow (`ci.yml`) - Handles environment-specific deployment based on target parameter
 3. Domain setup in Cloudflare - Required for SSL certificates and DNS records
 
+## D1 Migrations
+
+The main-branch deploy job runs `bash scripts/migrate_d1.sh` before deploying either Worker. The script reconciles known legacy schema with Wrangler's `d1_migrations` history, lists pending migration files, and applies only those not recorded as applied. Wrangler creates a D1 backup before applying migrations in CI.
+
+Legacy migration names are recorded only when the corresponding schema is present. Fresh databases receive no baseline records and have all migrations applied. A preflight rejects partial schema changes before Wrangler applies anything, stopping deployment so the schema can be repaired and retried. Production deploys are serialized to prevent concurrent migration races. The Cloudflare API token must have D1 write access for this step.
+
 ## Manual Deployment
 
 To deploy manually to staging environment:
