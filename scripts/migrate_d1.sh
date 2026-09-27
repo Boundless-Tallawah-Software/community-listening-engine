@@ -17,7 +17,7 @@ wrangler d1 execute "$DATABASE_NAME" \
   --yes \
   --json \
   --config "$WRANGLER_CONFIG" \
-  --file scripts/check_d1_schema.sql > "$TEMP_FILE"
+  --command "$(cat scripts/check_d1_schema.sql)" > "$TEMP_FILE"
 
 MIGRATION_SCHEMA_RESULT="$(cat "$TEMP_FILE")" node -e '
   const response = JSON.parse(process.env.MIGRATION_SCHEMA_RESULT);
