@@ -27,5 +27,11 @@
         "statusBar.foreground": "#15202b",
         "sash.hoverBorder": "#339957"
     },
-    "peacock.color": "#007fff"
+    "peacock.color": "#007fff",
+    "chat.tools.terminal.autoApprove": {
+        "/^command -v wrangler; command -v npm; test -d node_modules && printf 'node_modules present\\\\n' \\|\\| printf 'node_modules absent\\\\n'$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
 }
