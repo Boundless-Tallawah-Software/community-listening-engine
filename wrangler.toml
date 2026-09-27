@@ -25,6 +25,7 @@ binding = "AI"
 # [[triggers]]
 [[queues.consumers]]
 queue = "transcription"
+worker = "./src/queue-transcription.ts"
 max_batch_size = 50
 max_batch_timeout = 12
 
