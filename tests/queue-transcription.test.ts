@@ -18,13 +18,24 @@ function buildMessage(body: unknown, attempts = 1) {
   };
 }
 
-function buildEnv(options: { missingAudio?: boolean; failAi?: boolean; failD1?: boolean } = {}) {
+function buildEnv(options: {
+  missingAudio?: boolean;
+  failAi?: boolean;
+  failInsights?: boolean;
+  failD1Table?: "transcriptions" | "insights";
+} = {}) {
   const writes: Array<{ sql: string; values: unknown[] }> = [];
+  const modelCalls: string[] = [];
   const env = {
     AI: {
-      async run(_model: string, input: { audio: number[] }) {
-        if (options.failAi || input.audio[0] === 2) throw new Error("AI unavailable");
-        return { chat_transcript: "recognized words" };
+      async run(model: string, input: { audio?: number[] }) {
+        modelCalls.push(model);
+        if (model.includes("whisper")) {
+          if (options.failAi || input.audio?.[0] === 2) throw new Error("Whisper unavailable");
+          return { chat_transcript: "recognized words" };
+        }
+        if (options.failInsights) throw new Error("Insights unavailable");
+        return { response: { sentiment: "positive", needs: ["better onboarding"] } };
       },
     },
     DB: {
@@ -33,7 +44,9 @@ function buildEnv(options: { missingAudio?: boolean; failAi?: boolean; failD1?: 
           bind(...values: unknown[]) {
             return {
               async run() {
-                if (options.failD1) throw new Error("D1 unavailable");
+                if (sql.includes(`INTO ${options.failD1Table}`)) {
+                  throw new Error("D1 unavailable");
+                }
                 writes.push({ sql, values });
               },
             };
@@ -51,7 +64,7 @@ function buildEnv(options: { missingAudio?: boolean; failAi?: boolean; failD1?: 
     CACHE: {} as any,
     JOBS: {} as any,
   };
-  return { env: env as any, writes };
+  return { env: env as any, writes, modelCalls };
 }
 
 async function runTests() {
@@ -60,13 +73,20 @@ async function runTests() {
   await consumer.queue!({ messages: [success] } as any, successContext.env, {} as any);
   assert.strictEqual(success.ackCount, 1);
   assert.strictEqual(success.retryOptions.length, 0);
-  assert.strictEqual(successContext.writes.length, 1);
+  assert.strictEqual(successContext.writes.length, 2);
   assert(successContext.writes[0].sql.includes("ON CONFLICT(audio_key) DO UPDATE"));
+  assert(successContext.writes[1].sql.includes("ON CONFLICT(audio_key) DO UPDATE"));
   assert.deepStrictEqual(successContext.writes[0].values.slice(0, 3), [
     "audio/one.webm",
     "recognized words",
     JSON.stringify({ sender: "123" }),
   ]);
+  assert.deepStrictEqual(successContext.writes[1].values.slice(0, 3), [
+    "audio/one.webm",
+    "recognized words",
+    JSON.stringify({ sentiment: "positive", needs: ["better onboarding"] }),
+  ]);
+  assert.strictEqual(successContext.modelCalls.length, 2);
 
   const malformed = buildMessage({ audioKey: "", metadata: {} });
   await consumer.queue!({ messages: [malformed] } as any, successContext.env, {} as any);
@@ -84,12 +104,24 @@ async function runTests() {
   assert.strictEqual(mixedSuccess.ackCount, 1);
   assert.strictEqual(aiFailure.retryOptions.length, 1);
   assert.strictEqual(aiFailure.retryOptions[0].delaySeconds, 4);
-  assert.strictEqual(mixedContext.writes.length, 1);
+  assert.strictEqual(mixedContext.writes.length, 2);
+
+  const insightsFailure = buildMessage({ audioKey: "audio/insights-failure.webm", metadata: {} });
+  await consumer.queue!({ messages: [insightsFailure] } as any, buildEnv({ failInsights: true }).env, {} as any);
+  assert.strictEqual(insightsFailure.ackCount, 0);
+  assert.strictEqual(insightsFailure.retryOptions.length, 1);
 
   const d1Failure = buildMessage({ audioKey: "audio/three.webm", metadata: {} });
-  await consumer.queue!({ messages: [d1Failure] } as any, buildEnv({ failD1: true }).env, {} as any);
+  await consumer.queue!({ messages: [d1Failure] } as any, buildEnv({ failD1Table: "transcriptions" }).env, {} as any);
   assert.strictEqual(d1Failure.ackCount, 0);
   assert.strictEqual(d1Failure.retryOptions.length, 1);
+
+  const insightsD1Failure = buildMessage({ audioKey: "audio/three-insights.webm", metadata: {} });
+  const insightsD1Context = buildEnv({ failD1Table: "insights" });
+  await consumer.queue!({ messages: [insightsD1Failure] } as any, insightsD1Context.env, {} as any);
+  assert.strictEqual(insightsD1Failure.ackCount, 0);
+  assert.strictEqual(insightsD1Failure.retryOptions.length, 1);
+  assert.strictEqual(insightsD1Context.writes.length, 1);
 
   console.log("Queue transcription tests passed");
 }

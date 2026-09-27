@@ -4,7 +4,7 @@ import type { Env } from "./types";
 
 export async function transcribeAudio(
   audioBlob: Blob,
-  env: Env,
+  env: Pick<Env, "AI">,
   ctx: ExecutionContext
 ): Promise<string> {
   const audio = new Uint8Array(await audioBlob.arrayBuffer());

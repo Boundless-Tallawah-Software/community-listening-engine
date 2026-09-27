@@ -1,5 +1,6 @@
 import type { TranscriptionEnv, TranscriptionQueueMessage } from "./types";
 import { transcribeAudio } from "./worker-transcription.ts";
+import { extractInsights } from "./worker-intelligence.ts";
 
 export default {
   async queue(
@@ -27,6 +28,8 @@ export default {
 
         const audio = await audioObject.arrayBuffer();
         const transcript = await transcribeAudio(new Blob([audio]), env, ctx);
+        const insights = await extractInsights(transcript, env, ctx);
+
         await env.DB.prepare(
           `INSERT INTO transcriptions (audio_key, transcript, metadata, created_at)
            VALUES (?, ?, ?, ?)
@@ -38,6 +41,20 @@ export default {
           audioKey,
           transcript,
           JSON.stringify(metadata),
+          new Date().toISOString()
+        ).run();
+
+        await env.DB.prepare(
+          `INSERT INTO insights (audio_key, transcript, payload, created_at)
+           VALUES (?, ?, ?, ?)
+           ON CONFLICT(audio_key) DO UPDATE SET
+             transcript = excluded.transcript,
+             payload = excluded.payload,
+             created_at = excluded.created_at`
+        ).bind(
+          audioKey,
+          transcript,
+          JSON.stringify(insights),
           new Date().toISOString()
         ).run();
 

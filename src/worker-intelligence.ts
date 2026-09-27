@@ -4,7 +4,7 @@ import type { Env } from "./types";
 
 export async function extractInsights(
   transcript: string,
-  env: Env,
+  env: Pick<Env, "AI">,
   ctx: ExecutionContext
 ): Promise<object> {
 const result = await env.AI.run("@cf/mistral-small-3.1-24b-instruct", {

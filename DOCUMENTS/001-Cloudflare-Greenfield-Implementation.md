@@ -1,6 +1,6 @@
 # 000-Cloudflare-Greenfield-Implementation
 
-*This file provides a concise implementation outline for migrating the Community Listening Engine to a serverless Cloudflare stack.  It references the greenfield roadmap (see `CLOUDFLARE_GREENFIELD_ROADMAP.md`) and expands key technical steps for setup, deployment, CI, and monitoring.*
+*This file provides a concise implementation outline for migrating the Community Listening Engine to a serverless Cloudflare stack.  It references the greenfield roadmap (see [019-Cloudflare-Greenfield-Roadmap.md](PLANS/019-Cloudflare-Greenfield-Roadmap.md)) and expands key technical steps for setup, deployment, CI, and monitoring.*
 
 ## High‑level Stack
 - **Workers / Workers AI** – serverless runtime + LLM inference (Whisper, Mistral, etc.)
