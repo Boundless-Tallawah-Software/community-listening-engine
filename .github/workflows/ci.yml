@@ -69,6 +69,8 @@ jobs:
         with:
           node-version: '24'
       - run: npm ci
+      - name: Install Wrangler
+        run: npm i -g wrangler
       - name: Deploy
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
