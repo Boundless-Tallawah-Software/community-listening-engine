@@ -26,5 +26,6 @@ binding = "AI"
 [[queues.consumers]]
 queue = "transcription"
 max_batch_size = 50
-max_batch_timeout = 12000
+max_batch_timeout = 12
+
 
