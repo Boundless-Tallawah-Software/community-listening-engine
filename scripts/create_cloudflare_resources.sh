@@ -23,5 +23,10 @@ if ! $WRANGLER queues list | grep -Fq "transcription" > /dev/null 2>&1; then
   $WRANGLER queues create transcription || true
 fi
 
+if ! $WRANGLER queues list | grep -Fq "transcription-dlq" > /dev/null 2>&1; then
+  echo "Creating Queue transcription-dlq"
+  $WRANGLER queues create transcription-dlq || true
+fi
+
 echo "All resources verified/created"
 

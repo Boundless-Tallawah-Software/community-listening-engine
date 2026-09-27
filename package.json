@@ -9,8 +9,11 @@
   },
   "scripts": {
     "lint": "echo 'Linting skipped'",
-    "build": "wrangler build",
-    "test": "node -r ts-node/register tests/worker.test.ts"
+    "build": "wrangler deploy --dry-run --config wrangler.toml && wrangler deploy --dry-run --config wrangler.transcription.toml",
+    "test": "node -r ts-node/register tests/worker.test.ts && node -r ts-node/register tests/queue-transcription.test.ts",
+    "deploy:webhook": "wrangler deploy --config wrangler.toml",
+    "deploy:transcription": "wrangler deploy --config wrangler.transcription.toml",
+    "deploy:cloudflare": "npm run deploy:webhook && npm run deploy:transcription"
   },
   "repository": {
     "type": "git",

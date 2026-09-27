@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS transcriptions (
+  audio_key TEXT PRIMARY KEY,
+  transcript TEXT NOT NULL,
+  metadata TEXT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

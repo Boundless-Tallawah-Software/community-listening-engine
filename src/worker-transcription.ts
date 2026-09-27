@@ -7,10 +7,10 @@ export async function transcribeAudio(
   env: Env,
   ctx: ExecutionContext
 ): Promise<string> {
-// Use Workers AI Whisper API
-const result = await env.AI.run("@cf/openai/whisper", {
-  audio: Array.from(new Uint8Array(audioBlob)),
-  language: "en"
-});
-return result.chat_transcript;
+  const audio = new Uint8Array(await audioBlob.arrayBuffer());
+  const result = await env.AI.run("@cf/openai/whisper", {
+    audio: Array.from(audio),
+    language: "en"
+  });
+  return result.chat_transcript;
 }

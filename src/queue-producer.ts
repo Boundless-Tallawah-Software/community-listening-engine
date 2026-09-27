@@ -1,11 +1,11 @@
-// @ts-nocheck
 import type { Env } from "./types";
+import type { TranscriptionQueueMessage } from "./types";
 
 export async function enqueueTranscription(
   env: Env,
   audioKey: string,
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
 ) {
-  const msg: QueueMessage = { audioKey, metadata };
-  await env.JOBS.enqueue(msg, { maxRetries: 3 });
+  const msg: TranscriptionQueueMessage = { audioKey, metadata };
+  await env.JOBS.send(msg);
 }

@@ -39,9 +39,11 @@ npm run lint || echo "Linting skipped or failed"
 echo "Building project..."
 npm run build
 
-# Deploy using wrangler
-echo "Deploying to $DEPLOY_URL..."
-wrangler deploy
+# Deploy both independently configured Workers
+echo "Deploying webhook Worker to $DEPLOY_URL..."
+npm run deploy:webhook
+echo "Deploying transcription Worker..."
+npm run deploy:transcription
 
 echo "Production release completed successfully!"
 echo "Deployed to: $DEPLOY_URL"
