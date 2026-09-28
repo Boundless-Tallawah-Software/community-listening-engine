@@ -19,3 +19,19 @@ max_batch_size = 10
 max_batch_timeout = 5
 max_retries = 5
 dead_letter_queue = "transcription-dlq"
+
+[observability]
+enabled = false
+head_sampling_rate = 1
+redact_query_string = false
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 1
+persist = true
