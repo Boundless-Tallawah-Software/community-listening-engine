@@ -4,7 +4,12 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-DATABASE_NAME="listen_engine_db"
+DEPLOY_TARGET="${DEPLOY_TARGET:-production}"
+case "$DEPLOY_TARGET" in
+  production) DATABASE_NAME="listen_engine_db" ;;
+  staging) DATABASE_NAME="listen_engine_db_staging" ;;
+  *) echo "DEPLOY_TARGET must be production or staging." >&2; exit 1 ;;
+esac
 WRANGLER_CONFIG="wrangler.transcription.toml"
 TEMP_FILE="$(mktemp)"
 trap 'rm -f "$TEMP_FILE"' EXIT
