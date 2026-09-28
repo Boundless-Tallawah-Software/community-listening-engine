@@ -1,18 +1,18 @@
 import assert from 'assert';
 // Simple in‑memory D1 stub
 class FakeD1 {
-  private inserts: any[] = [];
+  private recordedInserts: any[] = [];
   prepare(sql: string) {
     const self = this;
     return {
       bind: (...args: any[]) => ({
         run: async () => {
-          self.inserts.push({ sql, args });
+          self.recordedInserts.push({ sql, args });
         }
       })
     };
   }
-  get inserts() { return this.inserts; }
+  get inserts() { return this.recordedInserts; }
 }
 
 // Mock Env
@@ -38,6 +38,14 @@ env.AI = {
 import worker from '../src/webhook-worker.ts';
 
 (async () => {
+  // Reject requests that cannot be parsed as multipart form data.
+  const requestWithoutContentType = new Request('https://example.com', {
+    method: 'POST'
+  });
+  const missingContentTypeResp = await worker.fetch(requestWithoutContentType as any, env as any, {} as any);
+  assert.strictEqual(missingContentTypeResp.status, 400);
+  assert((await missingContentTypeResp.text()).includes('Expected multipart/form-data'));
+
   // Test 1: no audio
   const form1 = new FormData();
   const request1 = new Request('https://example.com', {

@@ -25,6 +25,10 @@ export default {
     }
 
     // Default handler (original webhook logic)
+    const contentType = request.headers.get("content-type") ?? "";
+    if (!contentType.toLowerCase().startsWith("multipart/form-data")) {
+      return new Response("Expected multipart/form-data", { status: 400 });
+    }
     const form = await request.formData();
     const audioFile = form.get("audio");
     if (!(audioFile instanceof File)) {
