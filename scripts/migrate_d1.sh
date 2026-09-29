@@ -34,7 +34,7 @@ run_wrangler d1 execute "$DATABASE_NAME" \
   --remote \
   --yes \
   --json \
-  --command "$(cat scripts/check_d1_schema.sql)" > "$TEMP_FILE"
+  --command "$(cat "$ROOT_DIR/scripts/check_d1_schema.sql")" > "$TEMP_FILE"
 
 MIGRATION_SCHEMA_RESULT="$(cat "$TEMP_FILE")" node -e '
   const response = JSON.parse(process.env.MIGRATION_SCHEMA_RESULT);
@@ -49,7 +49,7 @@ printf 'Reconciling existing D1 schema with Wrangler migration history...\n'
 run_wrangler d1 execute "$DATABASE_NAME" \
   --remote \
   --yes \
-  --file scripts/baseline_d1_migrations.sql
+  --file "$ROOT_DIR/scripts/baseline_d1_migrations.sql"
 
 printf '\nChecking pending D1 migrations...\n'
 run_wrangler d1 migrations list "$DATABASE_NAME" \

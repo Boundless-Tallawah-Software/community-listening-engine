@@ -100,7 +100,7 @@ jobs:
           set -euo pipefail
           npm run build:pages
           mkdir -p "$PAGES_PROJECT_DIR"
-          cp -R dist functions "$PAGES_PROJECT_DIR/"
+          cp -R dist functions migrations "$PAGES_PROJECT_DIR/"
           node scripts/create_pages_config.mjs "$PAGES_PROJECT_DIR/wrangler.jsonc"
       - name: Migrate staging database
         run: bash ./scripts/migrate_d1.sh
