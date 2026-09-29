@@ -69,11 +69,11 @@ jobs:
           CLOUDFLARE_INFORMATION_MESSAGE: ${{ vars.CLOUDFLARE_INFORMATION_MESSAGE }}
         run: |
           set -euo pipefail
-          CONFIG_FILE=.wrangler.pages.generated.jsonc
-          trap 'rm -f "$CONFIG_FILE"' EXIT
-          npm run build:pages
-          node scripts/create_pages_config.mjs "$CONFIG_FILE"
-          wrangler pages functions build functions --config "$CONFIG_FILE" --build-output-directory dist
+          PAGES_PROJECT_DIR="$RUNNER_TEMP/pages-project"
+          mkdir -p "$PAGES_PROJECT_DIR"
+          cp -R dist functions "$PAGES_PROJECT_DIR/"
+          node scripts/create_pages_config.mjs "$PAGES_PROJECT_DIR/wrangler.jsonc"
+          wrangler pages functions build functions --cwd "$PAGES_PROJECT_DIR" --build-output-directory dist
 
   preview:
     runs-on: ubuntu-latest
@@ -92,33 +92,36 @@ jobs:
         run: npm i -g wrangler
       - name: Prepare Pages preview config
         env:
+          PAGES_PROJECT_DIR: ${{ runner.temp }}/pages-project
           CLOUDFLARE_D1_DATABASE_ID: ${{ needs.test.outputs.d1_database_id }}
           CLOUDFLARE_D1_PREVIEW_DATABASE_ID: ${{ needs.test.outputs.d1_staging_database_id }}
           CLOUDFLARE_INFORMATION_MESSAGE: ${{ vars.CLOUDFLARE_INFORMATION_MESSAGE }}
         run: |
+          set -euo pipefail
           npm run build:pages
-          node scripts/create_pages_config.mjs .wrangler.pages.generated.jsonc
+          mkdir -p "$PAGES_PROJECT_DIR"
+          cp -R dist functions "$PAGES_PROJECT_DIR/"
+          node scripts/create_pages_config.mjs "$PAGES_PROJECT_DIR/wrangler.jsonc"
       - name: Migrate staging database
         run: bash ./scripts/migrate_d1.sh
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           DEPLOY_TARGET: staging
-          WRANGLER_CONFIG: .wrangler.pages.generated.jsonc
+          WRANGLER_CWD: ${{ runner.temp }}/pages-project
           WRANGLER_ENV: preview
       - name: Deploy Pages preview
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PAGES_PROJECT_DIR: ${{ runner.temp }}/pages-project
           CLOUDFLARE_D1_DATABASE_ID: ${{ needs.test.outputs.d1_database_id }}
           CLOUDFLARE_D1_PREVIEW_DATABASE_ID: ${{ needs.test.outputs.d1_staging_database_id }}
           CLOUDFLARE_INFORMATION_MESSAGE: ${{ vars.CLOUDFLARE_INFORMATION_MESSAGE }}
         run: |
           set -euo pipefail
-          CONFIG_FILE=.wrangler.pages.generated.jsonc
-          trap 'rm -f "$CONFIG_FILE"' EXIT
-          wrangler pages deploy dist \
-            --config "$CONFIG_FILE" \
+          wrangler pages deploy "$PAGES_PROJECT_DIR/dist" \
+            --cwd "$PAGES_PROJECT_DIR" \
             --project-name "$CLOUDFLARE_PAGES_PROJECT_NAME" \
             --branch "pr-${{ github.event.pull_request.number }}"
 

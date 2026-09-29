@@ -11,13 +11,18 @@ case "$DEPLOY_TARGET" in
   *) echo "DEPLOY_TARGET must be production or staging." >&2; exit 1 ;;
 esac
 WRANGLER_CONFIG="${WRANGLER_CONFIG:-wrangler.transcription.toml}"
+WRANGLER_CWD="${WRANGLER_CWD:-}"
 TEMP_FILE="$(mktemp)"
 trap 'rm -f "$TEMP_FILE"' EXIT
 
 : "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN is required}"
 
 run_wrangler() {
-  if [[ -n "${WRANGLER_ENV:-}" ]]; then
+  if [[ -n "$WRANGLER_CWD" && -n "${WRANGLER_ENV:-}" ]]; then
+    wrangler "$@" --cwd "$WRANGLER_CWD" --env "$WRANGLER_ENV"
+  elif [[ -n "$WRANGLER_CWD" ]]; then
+    wrangler "$@" --cwd "$WRANGLER_CWD"
+  elif [[ -n "${WRANGLER_ENV:-}" ]]; then
     wrangler "$@" --config "$WRANGLER_CONFIG" --env "$WRANGLER_ENV"
   else
     wrangler "$@" --config "$WRANGLER_CONFIG"
