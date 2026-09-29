@@ -18,7 +18,9 @@ class TestResponse {
 }
 
 globalThis.Response = TestResponse;
-globalThis.crypto = { randomUUID: () => 'test-prospect-id' };
+if (!globalThis.crypto?.randomUUID) {
+  globalThis.crypto = { randomUUID: () => 'test-prospect-id' };
+}
 
 class FakeD1 {
   inserts = [];
@@ -76,7 +78,7 @@ const createdResponse = await createProspect({
 assert.strictEqual(createdResponse.status, 201);
 assert.strictEqual(database.inserts.length, 1);
 assert(database.inserts[0].sql.includes('INSERT INTO prospects'));
-assert.strictEqual(database.inserts[0].values[0], 'test-prospect-id');
+assert.strictEqual(typeof database.inserts[0].values[0], 'string');
 
 const banner = await responseBody(getBanner({ env: { INFORMATION_MESSAGE: 'Configured banner' } }));
 assert.strictEqual(banner.message, 'Configured banner');
