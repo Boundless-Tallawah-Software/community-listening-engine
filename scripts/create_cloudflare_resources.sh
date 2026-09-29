@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID:?}
+# Require the target account; Wrangler reads this value from the environment.
+: "${CLOUDFLARE_ACCOUNT_ID:?}"
 WRANGLER=wrangler
 DEPLOY_TARGET="${DEPLOY_TARGET:-production}"
 
@@ -11,12 +12,12 @@ case "$DEPLOY_TARGET" in
 esac
 
 # D1 database
-if ! $WRANGLER d1 info "$DATABASE_NAME" --account-id "$ACCOUNT_ID" > /dev/null 2>&1; then
+if ! $WRANGLER d1 info "$DATABASE_NAME" > /dev/null 2>&1; then
   echo "Creating D1 database: $DATABASE_NAME"
-  $WRANGLER d1 create "$DATABASE_NAME" --account-id "$ACCOUNT_ID" || true
+  $WRANGLER d1 create "$DATABASE_NAME"
 fi
 
-D1_DATABASE_ID="$($WRANGLER d1 list --json --account-id "$ACCOUNT_ID" | node scripts/resolve_d1_database_id.mjs "$DATABASE_NAME")"
+D1_DATABASE_ID="$($WRANGLER d1 list --json | node scripts/resolve_d1_database_id.mjs "$DATABASE_NAME")"
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
   printf 'd1_database_id=%s\n' "$D1_DATABASE_ID" >> "$GITHUB_OUTPUT"
 else
@@ -30,8 +31,6 @@ fi
 # R2 bucket
 $WRANGLER r2 bucket create listen-audio || true
 
-# KV namespace
-# KV namespace
 # KV namespace
 $WRANGLER kv namespace create CACHE || true
 
