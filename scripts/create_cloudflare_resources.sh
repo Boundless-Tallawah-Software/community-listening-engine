@@ -24,6 +24,14 @@ else
   printf 'CLOUDFLARE_D1_DATABASE_ID=%s\n' "$D1_DATABASE_ID"
 fi
 
+# Pages project (idempotent; needed before any `wrangler pages deploy`/`functions build`)
+if [[ -n "${CLOUDFLARE_PAGES_PROJECT_NAME:-}" ]]; then
+  if ! $WRANGLER pages project list 2>/dev/null | grep -Fq "$CLOUDFLARE_PAGES_PROJECT_NAME"; then
+    echo "Creating Pages project: $CLOUDFLARE_PAGES_PROJECT_NAME"
+    $WRANGLER pages project create "$CLOUDFLARE_PAGES_PROJECT_NAME" --production-branch main
+  fi
+fi
+
 if [[ "${D1_ONLY:-false}" == "true" ]]; then
   exit 0
 fi
