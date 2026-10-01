@@ -10,8 +10,10 @@ The **CF_API_TOKEN** used in the CI pipeline must have the following permissions
 | KV Namespaces | Edit | Read/write to the `CACHE` namespace binding. |
 | Queues | Edit | Produce messages to the `transcription` queue. |
 | AI Models | Edit | Invoke AI bindings (`AI.run`) from the worker. |
+| Cloudflare Pages | Edit | Deploy and manage the `community-listening-engine` Pages project (`wrangler pages deploy`, `wrangler pages functions build`). |
 | Account Settings | Edit | Create, revoke, and list API tokens. |
 | Secrets (Optional) | Edit | Manage secrets via the Cloudflare API. |
+| User Memberships | Read | Lets Wrangler resolve account membership roles at login (avoids the "Unable to get membership roles" warning). |
 
 **How to create the token**
 1. In the Cloudflare dashboard, go to **My Profile → API Tokens** (or **Manage Account → API Tokens** for account‑level tokens).

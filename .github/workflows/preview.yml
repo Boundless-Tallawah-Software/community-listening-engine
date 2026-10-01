@@ -1,17 +1,14 @@
-# GitHub Actions CI Workflow
-# .github/workflows/ci.yml
-# Production pipeline only: builds, migrates, and deploys `main`.
-# For pull request previews, see .github/workflows/preview.yml
-name: CI
+# GitHub Actions Preview Workflow
+# .github/workflows/preview.yml
+# Builds and deploys a Cloudflare Pages preview for every pull request.
+# For the production pipeline, see .github/workflows/ci.yml
+name: Preview
 
 on:
-  push:
-    branches: [main]
+  pull_request:
 
 env:
   CLOUDFLARE_PAGES_PROJECT_NAME: community-listening-engine
-  # Pages config requires a preview D1 id even though production deploys never use the preview env.
-  CLOUDFLARE_D1_PREVIEW_DATABASE_ID_PLACEHOLDER: '00000000-0000-0000-0000-000000000000'
 
 jobs:
   lint:
@@ -27,8 +24,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: lint
+    if: github.event.pull_request.head.repo.full_name == github.repository
     outputs:
       d1_database_id: ${{ steps.resources.outputs.d1_database_id }}
+      d1_staging_database_id: ${{ steps.staging_resources.outputs.d1_database_id }}
     env:
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -50,6 +49,14 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           DEPLOY_TARGET: production
+      - name: Create Pages preview database
+        id: staging_resources
+        run: ./scripts/create_cloudflare_resources.sh
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          DEPLOY_TARGET: staging
+          D1_ONLY: 'true'
       - name: Build Worker
         run: npm run build
       - name: Build Pages site
@@ -57,7 +64,7 @@ jobs:
       - name: Build Pages Functions
         env:
           CLOUDFLARE_D1_DATABASE_ID: ${{ steps.resources.outputs.d1_database_id || '00000000-0000-0000-0000-000000000000' }}
-          CLOUDFLARE_D1_PREVIEW_DATABASE_ID: ${{ env.CLOUDFLARE_D1_PREVIEW_DATABASE_ID_PLACEHOLDER }}
+          CLOUDFLARE_D1_PREVIEW_DATABASE_ID: ${{ steps.staging_resources.outputs.d1_database_id || '00000000-0000-0000-0000-000000000000' }}
           CLOUDFLARE_INFORMATION_MESSAGE: ${{ vars.CLOUDFLARE_INFORMATION_MESSAGE }}
         run: |
           set -euo pipefail
@@ -67,12 +74,12 @@ jobs:
           node scripts/create_pages_config.mjs "$PAGES_PROJECT_DIR/wrangler.jsonc"
           wrangler pages functions build functions --cwd "$PAGES_PROJECT_DIR" --build-output-directory dist
 
-  deploy:
+  preview:
     runs-on: ubuntu-latest
     needs: test
     concurrency:
-      group: community-listening-engine-production-deploy
-      cancel-in-progress: false
+      group: pages-preview-pr-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -81,25 +88,37 @@ jobs:
       - run: npm ci
       - name: Install Wrangler
         run: npm i -g wrangler
-      - name: Check and apply D1 migrations
+      - name: Prepare Pages preview config
+        env:
+          PAGES_PROJECT_DIR: ${{ runner.temp }}/pages-project
+          CLOUDFLARE_D1_DATABASE_ID: ${{ needs.test.outputs.d1_database_id }}
+          CLOUDFLARE_D1_PREVIEW_DATABASE_ID: ${{ needs.test.outputs.d1_staging_database_id }}
+          CLOUDFLARE_INFORMATION_MESSAGE: ${{ vars.CLOUDFLARE_INFORMATION_MESSAGE }}
+        run: |
+          set -euo pipefail
+          npm run build:pages
+          mkdir -p "$PAGES_PROJECT_DIR"
+          cp -R dist functions migrations "$PAGES_PROJECT_DIR/"
+          node scripts/create_pages_config.mjs "$PAGES_PROJECT_DIR/wrangler.jsonc"
+      - name: Migrate staging database
         run: bash ./scripts/migrate_d1.sh
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          DEPLOY_TARGET: production
-      - name: Deploy
+          DEPLOY_TARGET: staging
+          WRANGLER_CWD: ${{ runner.temp }}/pages-project
+          WRANGLER_ENV: preview
+      - name: Deploy Pages preview
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PAGES_PROJECT_DIR: ${{ runner.temp }}/pages-project
           CLOUDFLARE_D1_DATABASE_ID: ${{ needs.test.outputs.d1_database_id }}
-          CLOUDFLARE_D1_PREVIEW_DATABASE_ID: ${{ env.CLOUDFLARE_D1_PREVIEW_DATABASE_ID_PLACEHOLDER }}
+          CLOUDFLARE_D1_PREVIEW_DATABASE_ID: ${{ needs.test.outputs.d1_staging_database_id }}
           CLOUDFLARE_INFORMATION_MESSAGE: ${{ vars.CLOUDFLARE_INFORMATION_MESSAGE }}
-          DEPLOY_TARGET: production
         run: |
-          if [ -z "$CLOUDFLARE_D1_DATABASE_ID" ]; then
-            echo "The resource provisioning job did not return a D1 database ID."
-            exit 1
-          fi
-          chmod +x ./scripts/deploy.sh
-          ./scripts/deploy.sh $DEPLOY_TARGET
-          npm run deploy:pages
+          set -euo pipefail
+          wrangler pages deploy "$PAGES_PROJECT_DIR/dist" \
+            --cwd "$PAGES_PROJECT_DIR" \
+            --project-name "$CLOUDFLARE_PAGES_PROJECT_NAME" \
+            --branch "pr-${{ github.event.pull_request.number }}"
