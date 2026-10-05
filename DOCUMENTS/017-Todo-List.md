@@ -1,4 +1,12 @@
 # TODO
+
+## - 20260929
+---
+
+1. [ ] Dashboard: Status: Use green icon for good status, red for bad status, yellow for uncertain. 
+2. [ ] Dashboard: Do "System Status" items still match current repo?
+
+
 ## - 20260829
 ---
 1. [x] Test pytest locally

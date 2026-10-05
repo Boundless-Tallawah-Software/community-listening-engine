@@ -4,20 +4,37 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-DATABASE_NAME="listen_engine_db"
-WRANGLER_CONFIG="wrangler.transcription.toml"
+DEPLOY_TARGET="${DEPLOY_TARGET:-production}"
+case "$DEPLOY_TARGET" in
+  production) DATABASE_NAME="listen_engine_db" ;;
+  staging) DATABASE_NAME="listen_engine_db_staging" ;;
+  *) echo "DEPLOY_TARGET must be production or staging." >&2; exit 1 ;;
+esac
+WRANGLER_CONFIG="${WRANGLER_CONFIG:-wrangler.transcription.toml}"
+WRANGLER_CWD="${WRANGLER_CWD:-}"
 TEMP_FILE="$(mktemp)"
 trap 'rm -f "$TEMP_FILE"' EXIT
 
 : "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN is required}"
 
+run_wrangler() {
+  if [[ -n "$WRANGLER_CWD" && -n "${WRANGLER_ENV:-}" ]]; then
+    wrangler "$@" --cwd "$WRANGLER_CWD" --env "$WRANGLER_ENV"
+  elif [[ -n "$WRANGLER_CWD" ]]; then
+    wrangler "$@" --cwd "$WRANGLER_CWD"
+  elif [[ -n "${WRANGLER_ENV:-}" ]]; then
+    wrangler "$@" --config "$WRANGLER_CONFIG" --env "$WRANGLER_ENV"
+  else
+    wrangler "$@" --config "$WRANGLER_CONFIG"
+  fi
+}
+
 printf 'Checking for partial D1 schema changes...\n'
-wrangler d1 execute "$DATABASE_NAME" \
+run_wrangler d1 execute "$DATABASE_NAME" \
   --remote \
   --yes \
   --json \
-  --config "$WRANGLER_CONFIG" \
-  --command "$(cat scripts/check_d1_schema.sql)" > "$TEMP_FILE"
+  --command "$(cat "$ROOT_DIR/scripts/check_d1_schema.sql")" > "$TEMP_FILE"
 
 MIGRATION_SCHEMA_RESULT="$(cat "$TEMP_FILE")" node -e '
   const response = JSON.parse(process.env.MIGRATION_SCHEMA_RESULT);
@@ -29,18 +46,15 @@ MIGRATION_SCHEMA_RESULT="$(cat "$TEMP_FILE")" node -e '
 '
 
 printf 'Reconciling existing D1 schema with Wrangler migration history...\n'
-wrangler d1 execute "$DATABASE_NAME" \
+run_wrangler d1 execute "$DATABASE_NAME" \
   --remote \
   --yes \
-  --config "$WRANGLER_CONFIG" \
-  --file scripts/baseline_d1_migrations.sql
+  --file "$ROOT_DIR/scripts/baseline_d1_migrations.sql"
 
 printf '\nChecking pending D1 migrations...\n'
-wrangler d1 migrations list "$DATABASE_NAME" \
-  --remote \
-  --config "$WRANGLER_CONFIG"
+run_wrangler d1 migrations list "$DATABASE_NAME" \
+  --remote
 
 printf '\nApplying pending D1 migrations...\n'
-wrangler d1 migrations apply "$DATABASE_NAME" \
-  --remote \
-  --config "$WRANGLER_CONFIG"
+run_wrangler d1 migrations apply "$DATABASE_NAME" \
+  --remote
