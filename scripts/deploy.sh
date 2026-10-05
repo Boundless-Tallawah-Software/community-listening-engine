@@ -39,6 +39,29 @@ npm run lint || echo "Linting skipped or failed"
 echo "Building project..."
 npm run build
 
+# Pin the existing KV namespace so Wrangler does not try to re-provision it
+KV_TITLE="community-listening-engine-cache"
+KV_LIST="$(wrangler kv namespace list)"
+KV_ID="$(printf '%s' "$KV_LIST" | node -e '
+let i="";process.stdin.on("data",c=>i+=c).on("end",()=>{
+const m=JSON.parse(i).filter(n=>n.title===process.argv[1]);
+process.stdout.write(m.length===1?m[0].id:"");});' "$KV_TITLE")"
+if [ -z "$KV_ID" ]; then
+    echo "Creating KV namespace $KV_TITLE"
+    wrangler kv namespace create "$KV_TITLE" >/dev/null
+    KV_LIST="$(wrangler kv namespace list)"
+    KV_ID="$(printf '%s' "$KV_LIST" | node -e '
+let i="";process.stdin.on("data",c=>i+=c).on("end",()=>{
+const m=JSON.parse(i).filter(n=>n.title===process.argv[1]);
+process.stdout.write(m.length===1?m[0].id:"");});' "$KV_TITLE")"
+fi
+if [ -z "$KV_ID" ]; then
+    echo "Could not resolve KV namespace ID for $KV_TITLE"
+    exit 1
+fi
+sed -i.bak "s|^binding = \"CACHE\".*|binding = \"CACHE\"\nid = \"$KV_ID\"|" wrangler.toml
+rm -f wrangler.toml.bak
+
 # Deploy both independently configured Workers
 echo "Deploying webhook Worker to $DEPLOY_URL..."
 npm run deploy:webhook
