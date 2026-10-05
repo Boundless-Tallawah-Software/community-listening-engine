@@ -271,8 +271,16 @@ h1, h2, h3 {
     cursor: pointer;
 }
 
-.status-indicator.connected {
-    color: var(--color-tertiary); /* Lush Green */
+.status-indicator.good {
+    color: #1f7a3f;
+}
+
+.status-indicator.bad {
+    color: var(--color-error);
+}
+
+.status-indicator.uncertain {
+    color: #b27a00;
 }
 
 /* 8. Activity/Message/Insight Lists */

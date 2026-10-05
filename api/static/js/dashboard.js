@@ -17,6 +17,13 @@ document.addEventListener('DOMContentLoaded', () => {
         "'": '&#39;'
     })[character]);
 
+    const setStatus = (id, state, label) => {
+        const indicator = document.getElementById(id);
+        if (!indicator) return;
+        indicator.className = `status-indicator ${state}`;
+        indicator.setAttribute('aria-label', label);
+    };
+
     const switchView = (viewId) => {
         // Deactivate all views and buttons
         views.forEach(view => view.classList.remove('active'));
@@ -70,6 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`${apiBaseUrl}/api/v1/dashboard/stats`);
             if (!response.ok) throw new Error('Could not load dashboard stats.');
             const data = await response.json();
+
+            setStatus('status-api', 'good', 'Operational');
+            setStatus('status-database', 'good', 'Operational');
             
             document.getElementById('total-messages').textContent = data.total_messages.toLocaleString();
             document.getElementById('total-insights').textContent = data.total_insights.toLocaleString();
@@ -79,6 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
             await renderActivityList();
         } catch (error) {
             console.error("Failed to load dashboard data:", error);
+            setStatus('status-api', 'bad', 'Unavailable');
+            setStatus('status-database', 'uncertain', 'Status uncertain');
             document.getElementById('activity-list').innerHTML = '<p class="body-md" style="color: var(--color-error); font-style: italic;">Could not connect to API services. Is the backend running?</p>';
         }
     };

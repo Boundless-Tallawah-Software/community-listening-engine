@@ -3,8 +3,8 @@
 ## - 20260929
 ---
 
-1. [ ] Dashboard: Status: Use green icon for good status, red for bad status, yellow for uncertain. 
-2. [ ] Dashboard: Do "System Status" items still match current repo?
+1. [x] Dashboard: Status: Use green icon for good status, red for bad status, yellow for uncertain. 
+2. [x] Dashboard: Do "System Status" items still match current repo?
 
 
 ## - 20260829
