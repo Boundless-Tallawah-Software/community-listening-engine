@@ -329,11 +329,21 @@ main {
     100% { opacity: 0; transform: translateY(0); }
 }
 
-/* Optional Label */
-.optional-label {
-    font-size: var(--label-sm);
+/* Preamble Section */
+.preamble-section {
+    background: var(--surface-container-low);
+    border: 1px solid var(--outline-variant);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-stack-md) var(--spacing-stack-lg);
+    margin-bottom: var(--spacing-stack-lg);
+}
+
+.preamble-section p {
+    font-family: var(--font-body);
+    font-size: var(--body-md);
     color: var(--on-surface-variant);
-    font-weight: 400;
+    margin: 0;
+    line-height: var(--body-md-line-height);
 }
 
 .dashboard-link {
