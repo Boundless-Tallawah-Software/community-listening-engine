@@ -1,5 +1,11 @@
 # TODO
 
+## - 20261005
+---
+
+1. [ ] Prospect: Hide message about Whatsapp feature.
+
+
 ## - 20260929
 ---
 
