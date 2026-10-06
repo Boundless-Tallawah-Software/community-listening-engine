@@ -339,14 +339,14 @@ main {
 }
 
 .preamble-content {
-    text-align: center;
+    text-align: left;
 }
 
 .preamble-section p {
     font-family: var(--font-body);
     font-size: var(--body-md);
     color: var(--on-surface-variant);
-    margin: 0;
+    margin: 0 0 var(--spacing-stack-sm) 0;
     line-height: var(--body-md-line-height);
 }
 
