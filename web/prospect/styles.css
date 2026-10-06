@@ -331,11 +331,15 @@ main {
 
 /* Preamble Section */
 .preamble-section {
-    background: var(--surface-container-low);
+    background: var(--surface-container-lowest);
     border: 1px solid var(--outline-variant);
     border-radius: var(--radius-lg);
     padding: var(--spacing-stack-md) var(--spacing-stack-lg);
     margin-bottom: var(--spacing-stack-lg);
+}
+
+.preamble-content {
+    text-align: center;
 }
 
 .preamble-section p {
