@@ -109,6 +109,11 @@
         }
         
         infoMessage.textContent = finalMessage;
+        
+        // Hide banner if message is empty
+        if (!finalMessage.trim()) {
+            document.getElementById('infoBanner').style.display = 'none';
+        }
 
         function showSuccessToast(message) {
             const toast = document.createElement('div');
