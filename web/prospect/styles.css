@@ -329,11 +329,26 @@ main {
     100% { opacity: 0; transform: translateY(0); }
 }
 
-/* Optional Label */
-.optional-label {
-    font-size: var(--label-sm);
+/* Preamble Section */
+.preamble-section {
+    max-width: 768px;
+    margin: 0 auto var(--spacing-stack-lg);
+    background: var(--surface-container-lowest);
+    border: 1px solid var(--outline-variant);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-stack-md) var(--spacing-stack-lg);
+}
+
+.preamble-content {
+    text-align: left;
+}
+
+.preamble-section p {
+    font-family: var(--font-body);
+    font-size: var(--body-md);
     color: var(--on-surface-variant);
-    font-weight: 400;
+    margin: 0 0 var(--spacing-stack-sm) 0;
+    line-height: var(--body-md-line-height);
 }
 
 .dashboard-link {
