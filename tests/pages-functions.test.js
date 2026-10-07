@@ -47,11 +47,11 @@ class FakeD1 {
 const responseBody = async (response) => response.json();
 const formData = {
   owner_name: 'Owner',
+  business_name: 'Example Restaurant',
   business_type: 'Restaurant',
   email: 'owner@example.com',
   phone: '',
-  industry: 'Hospitality',
-  manual_process: 'Manual scheduling',
+  manual_process: '',
   pain_point: 'Too much time spent coordinating shifts',
 };
 const database = new FakeD1();
@@ -61,7 +61,11 @@ async function main() {
 const invalidResponse = await createProspect({
   request: {
     headers: { get: () => 'application/json' },
-    json: async () => ({ business_type: 'Restaurant' }),
+    json: async () => ({
+      owner_name: 'Owner',
+      business_type: 'Restaurant',
+      pain_point: 'Scheduling is difficult',
+    }),
   },
   env,
 });
@@ -79,6 +83,18 @@ assert.strictEqual(createdResponse.status, 201);
 assert.strictEqual(database.inserts.length, 1);
 assert(database.inserts[0].sql.includes('INSERT INTO prospects'));
 assert.strictEqual(typeof database.inserts[0].values[0], 'string');
+assert.strictEqual(database.inserts[0].values[2], formData.business_name);
+assert.strictEqual(database.inserts[0].values[6], '');
+
+const missingOwnerResponse = await createProspect({
+  request: {
+    headers: { get: () => 'application/json' },
+    json: async () => ({ ...formData, owner_name: '   ' }),
+  },
+  env,
+});
+assert.strictEqual(missingOwnerResponse.status, 400);
+assert.strictEqual(database.inserts.length, 1);
 
 const banner = await responseBody(getBanner({ env: { INFORMATION_MESSAGE: 'Configured banner' } }));
 assert.strictEqual(banner.message, 'Configured banner');

@@ -34,8 +34,13 @@
                     <h2>Owner Information</h2>
 
                     <div class="form-group">
-                        <label for="ownerName">Owner Name</label>
+                        <label for="ownerName">Owner Name *</label>
                         <input type="text" id="ownerName" name="owner_name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="businessName">Business Name *</label>
+                        <input type="text" id="businessName" name="business_name" required>
                     </div>
 
                     <div class="form-group">
@@ -49,28 +54,23 @@
                         <input type="email" id="email" name="email">
                         </div>
                         <div class="form-group">
-                            <label for="phone">Phone</label>
+                            <label for="phone">Phone (optional)</label>
                             <input type="tel" id="phone" name="phone">
                         </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="industry">Industry</label>
-                        <input type="text" id="industry" name="industry" placeholder="e.g., Healthcare, Technology">
                     </div>
                 </div>
 
                 <div class="form-section">
                     <h2>Conversation Details</h2>
-                    
+
                     <div class="form-group">
-                        <label for="manualProcess">How do you work today? *</label>
-                        <textarea id="manualProcess" name="manual_process" rows="6" placeholder="Describe the process you currently use..."></textarea>
+                        <label for="painPoint">Describe the challenge you want solved *</label>
+                        <textarea id="painPoint" name="pain_point" rows="6" placeholder="Describe the problem or challenge you face..." required></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="painPoint">Describe the challenge you want solved: *</label>
-                        <textarea id="painPoint" name="pain_point" rows="6" placeholder="Describe the problem or challenge you face..."></textarea>
+                        <label for="manualProcess">How do you work today? (optional)</label>
+                        <textarea id="manualProcess" name="manual_process" rows="6" placeholder="Describe the process you currently use..."></textarea>
                     </div>
                 </div>
 
