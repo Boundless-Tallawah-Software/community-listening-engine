@@ -13,6 +13,7 @@ import { fileURLToPath } from 'url';
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outputDirectory = path.join(projectRoot, 'dist');
 const staticDirectory = path.join(outputDirectory, 'static');
+const cssDirectory = path.join(staticDirectory, 'css');
 
 const removeDirectory = (directory) => {
   for (const entry of readdirSync(directory)) {
@@ -47,6 +48,15 @@ try {
 copyDirectory(path.join(projectRoot, 'web'), outputDirectory);
 copyDirectory(path.join(projectRoot, 'api/static'), staticDirectory);
 mkdirSync(staticDirectory, { recursive: true });
+mkdirSync(cssDirectory, { recursive: true });
+copyFileSync(
+  path.join(projectRoot, 'web/prospect/styles.css'),
+  path.join(cssDirectory, 'prospect.css')
+);
+copyFileSync(
+  path.join(projectRoot, 'web/styles.css'),
+  path.join(cssDirectory, 'dashboard.css')
+);
 copyFileSync(
   path.join(projectRoot, 'web/prospect/app.js'),
   path.join(staticDirectory, 'app.js')

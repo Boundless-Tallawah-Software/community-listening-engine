@@ -23,6 +23,7 @@
         "titleBar.inactiveForeground": "#e7e7e799",
         "activityBar.activeBorder": "#15202b",
         "activityBarTop.activeBorder": "#15202b",
+        "statusBar.inactiveBackground": "#007fff",
         "statusBar.background": "#339957",
         "statusBar.foreground": "#15202b",
         "sash.hoverBorder": "#339957"
