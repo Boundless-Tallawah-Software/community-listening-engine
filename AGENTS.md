@@ -17,7 +17,7 @@ This repository contains the **Community Listening Engine**, an AI-powered syste
 ```
 .
 ├── AGENTS.md                    # This file - Agent coordination guide
-├── Community Listening Engine/  # Main application module
+├── DOCUMENTS/                   # Documentation and plans folder
 │   └── PLANS/                   # Generated plans and strategies
 ├── src/                         # TypeScript source code (backend + workers)
 │   ├── api/                     # Express API (routes, middleware, handlers)
@@ -202,7 +202,7 @@ docker rm production containers
 ### Emergency Hotfixes
 - **Authorized**: Dev Agent with Review Agent approval
 - **Process**: Minimal change, rapid deploy, thorough post-mortem
-- **Requirement**: Document all changes in PLANS/ directory
+- **Requirement**: Document all changes in DOCUMENTS/PLANS/ directory
 
 ---
 
@@ -374,7 +374,7 @@ npm run load-sample-data
 ### Communication Channels
 - Use Git commits with descriptive messages
 - Create issues for non-trivial changes
-- Update PLANS/ directory with design decisions
+- Update DOCUMENTS/PLANS/ directory with design decisions
 - Document trade-offs in PR descriptions
 
 ---
