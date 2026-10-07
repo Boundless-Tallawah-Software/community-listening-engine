@@ -62,6 +62,7 @@ const invalidResponse = await createProspect({
   request: {
     headers: { get: () => 'application/json' },
     json: async () => ({
+      owner_name: 'Owner',
       business_type: 'Restaurant',
       pain_point: 'Scheduling is difficult',
     }),
@@ -84,6 +85,16 @@ assert(database.inserts[0].sql.includes('INSERT INTO prospects'));
 assert.strictEqual(typeof database.inserts[0].values[0], 'string');
 assert.strictEqual(database.inserts[0].values[2], formData.business_name);
 assert.strictEqual(database.inserts[0].values[6], '');
+
+const missingOwnerResponse = await createProspect({
+  request: {
+    headers: { get: () => 'application/json' },
+    json: async () => ({ ...formData, owner_name: '   ' }),
+  },
+  env,
+});
+assert.strictEqual(missingOwnerResponse.status, 400);
+assert.strictEqual(database.inserts.length, 1);
 
 const banner = await responseBody(getBanner({ env: { INFORMATION_MESSAGE: 'Configured banner' } }));
 assert.strictEqual(banner.message, 'Configured banner');
