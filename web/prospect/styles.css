@@ -331,7 +331,7 @@ main {
 
 /* Preamble Section */
 .preamble-section {
-    max-width: 960px;
+    max-width: 768px;
     margin: 0 auto var(--spacing-stack-lg);
     background: var(--surface-container-lowest);
     border: 1px solid var(--outline-variant);
@@ -352,7 +352,7 @@ main {
 }
 
 .company-logo {
-    aspect-ratio: 1380 / 752;
+    /* aspect-ratio: 1380 / 752; */
     min-height: 0;
     flex: 1;
     display: flex;
@@ -365,7 +365,7 @@ main {
 
 .company-logo img {
     width: 620px;
-    height: 650px;
+    /* height: 650px; */
     object-fit: contain;
     max-width: 100%;
     max-height: 100%;
