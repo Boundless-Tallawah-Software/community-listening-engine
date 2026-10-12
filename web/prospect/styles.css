@@ -331,12 +331,68 @@ main {
 
 /* Preamble Section */
 .preamble-section {
-    max-width: 768px;
+    max-width: 960px;
     margin: 0 auto var(--spacing-stack-lg);
     background: var(--surface-container-lowest);
     border: 1px solid var(--outline-variant);
     border-radius: var(--radius-lg);
     padding: var(--spacing-stack-md) var(--spacing-stack-lg);
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    align-items: stretch;
+    gap: var(--spacing-stack-lg);
+}
+
+.preamble-brand {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--spacing-stack-sm);
+}
+
+.company-logo {
+    aspect-ratio: 1380 / 752;
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-stack-md);
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.company-logo img {
+    width: 620px;
+    height: 650px;
+    object-fit: contain;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.company-wordmark {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.company-wordmark strong {
+    font-family: var(--font-display);
+    font-size: clamp(16px, 2vw, 24px);
+}
+
+.company-wordmark span {
+    font-size: var(--label-md);
+}
+
+.who-we-are {
+    align-self: center;
+    color: var(--primary);
+    font-family: var(--font-body);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 .preamble-content {
@@ -388,6 +444,16 @@ footer {
     header h1 {
         font-size: var(--headline-lg-mobile);
         line-height: var(--headline-lg-mobile-line-height);
+    }
+
+    .preamble-section {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-stack-md);
+    }
+
+    .preamble-brand {
+        width: min(100%, 420px);
+        margin: 0 auto;
     }
 
     .form-row {
