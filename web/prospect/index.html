@@ -101,6 +101,16 @@
                 </div>
             </form>
 
+            <!-- Proof of Concept Offer Section (independent of the form) -->
+            <div class="form-section" id="proofOfConceptSection">
+                <h2>Proof of Concept Offer</h2>
+                <p>We can produce a proof of concept for your business needs for <strong>$2500xcd</strong>.</p>
+                <p>Click the button below to accept this offer and get started.</p>
+                <div class="form-actions" style="margin-top: var(--spacing-stack-lg);">
+                    <button type="button" class="btn btn-primary" id="acceptOfferButton">Accept Proof of Concept Offer</button>
+                </div>
+            </div>
+
             <div id="successMessage" class="success-message" style="display: none;">
                 <h2>Conversation Logged!</h2>
                 <p>Thank you for sharing your conversation insights. They've been added to our Owner Directory and will be used to generate personalized outreach.</p>
@@ -121,7 +131,7 @@
         const infoMessage = document.getElementById('infoMessage');
         
         // Default message if no configuration
-        let defaultText = "";
+        let defaultText = "We can produce a proof of concept for $2500xcd. Click the button under the form to accept this offer.";
         let finalMessage = defaultText;
         
         // Check if MESSAGE_TEXT environment variable is set
@@ -172,6 +182,16 @@
                 </div>
             `;
             window.scrollTo(0, 0);
+        }
+
+        // --- Proof of Concept Offer Button ---
+        const acceptOfferButton = document.getElementById('acceptOfferButton');
+        if (acceptOfferButton) {
+            acceptOfferButton.addEventListener('click', () => {
+                // TODO 1: Payment service to be determined.
+                // Integrate payment processing here (e.g., Stripe, PayPal, etc.)
+                alert('Thank you for accepting the proof of concept offer ($2500xcd). Payment service integration is pending.');
+            });
         }
     </script>
 </body>
