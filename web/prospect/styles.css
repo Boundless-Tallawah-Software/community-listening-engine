@@ -396,6 +396,15 @@ main {
     text-underline-offset: 3px;
 }
 
+.portfolio-link {
+    align-self: center;
+    color: var(--primary);
+    font-family: var(--font-body);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
 .preamble-content {
     text-align: left;
     height: 100%;
