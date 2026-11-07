@@ -1,407 +1,182 @@
 # AGENTS.md - Community Listening Engine
 
-## 🎯 Project Overview
+## Project Overview
 
-This repository contains the **Community Listening Engine**, an AI-powered system designed to:
-- Process and analyze community feedback from multiple channels  
-- Transcribe conversations (voice/text)
-- Store and manage intelligence data
-- Provide APIs for consuming insights
+Community Listening Engine is a Cloudflare-native application for collecting community feedback, processing WhatsApp voice messages, and presenting prospect, message, and insight data.
 
-> **NOTE**: The repository has transitioned from a Python/FastAPI stack to a Node/TypeScript implementation. Documentation reflects the current TypeScript architecture.
+The active runtime is:
 
----
+- Cloudflare Pages for the static frontend.
+- Cloudflare Pages Functions for prospect and dashboard APIs.
+- Cloudflare Workers for WhatsApp webhooks and audio processing.
+- Cloudflare Queues for asynchronous transcription.
+- Workers AI for transcription and insight extraction.
+- D1 for structured data and R2 for audio objects.
 
-## 🏗️ Repository Structure
+The Python/FastAPI code under `api/` and `core/`, plus Docker configuration, is legacy. Treat it as reference or compatibility code unless a task explicitly targets it.
 
-```
-.
-├── AGENTS.md                    # This file - Agent coordination guide
-├── DOCUMENTS/                   # Documentation and plans folder
-│   └── PLANS/                   # Generated plans and strategies
-├── src/                         # TypeScript source code (backend + workers)
-│   ├── api/                     # Express API (routes, middleware, handlers)
-│   ├── workers/                 # Background workers (transcription, intelligence)
-│   ├── utils/                   # Shared utilities, types, config
-│   └── index.ts                 # Application bootstrap
-├── web/                         # Front‑end SPA (React‑style JavaScript)
-│   ├── index.html
-│   ├── dashboard/
-│   ├── prospect/
-│   └── thank-you/
-├── docker-compose.yml           # Services definition
-├── Dockerfile                   # Build Docker image for the API
-├── .env.example                 # Example environment variables
-├── package.json                 # npm scripts & dependencies
-└── .gitignore                   # Git ignore rules
-```
+## Source of Truth
 
----
+When files conflict, prefer:
 
-## 🤖 Agent Roles & Responsibilities
+1. `package.json` and `scripts/` for commands and build behavior.
+2. `.github/workflows/ci.yml` and `.github/workflows/preview.yml` for CI/CD behavior.
+3. `wrangler.toml` and `wrangler.transcription.toml` for runtime bindings and entry points.
+4. `src/README-cloudflare.md` for Worker architecture.
+5. `README-cloudflare.md` for Pages deployment.
+6. `DOCUMENTS/` for plans and operational context.
 
-### 1. **Builder Agent** 🔨
-**Primary Domain**: Build systems, Docker, deployments
+The root `README.md` contains stale legacy commands and architecture. Verify commands against `package.json` before using them.
 
-**Permissions**:
-- ✅ Read/write to `src/`, `web/` directories
-- ✅ Run build commands via builder tools
-- ✅ Manage `docker-compose.yml` updates
-- ✅ Handle dependency resolution in `package.json`
-- ❌ Cannot modify source logic directly (unless elevated)
+## Repository Map
 
-**Key Tasks**:
-- Container image builds and optimizations
-- Deployment pipeline maintenance
-- Environment variable management
-- Infrastructure as code updates
-
----
-
-### 2. **Dev Agent** 💻
-**Primary Domain**: Feature development, bug fixes, enhancements
-
-**Permissions**:
-- ✅ Full read/write to `src/`, `web/` source files
-- ✅ Modify logic in `src/api/`, `src/workers/`
-- ✅ Create/update models in `models/` directory
-- ✅ Write unit tests in `tests/`
-- ✅ Update documentation and comments
-- ❌ Cannot modify Dockerfiles or compose files (use Builder Agent)
-
-**Key Tasks**:
-- Implementing new API endpoints in `src/api/`
-- Enhancing intelligence algorithms in `src/workers/intelligence`
-- Improving transcription accuracy in `src/workers/transcription`
-- Writing and maintaining tests
-- Bug fixes across all modules
-
----
-
-### 3. **Review Agent** 🔍
-**Primary Domain**: Code quality, security, best practices
-
-**Permissions**:
-- ✅ Read-only access to entire repository
-- ✅ Analyze code patterns and complexity
-- ✅ Check for security vulnerabilities
-- ✅ Validate test coverage
-- ❌ Cannot make any write changes (must recommend to Dev/Builder Agents)
-
-**Key Tasks**:
-- Pre-commit code reviews
-- Security scanning before merges
-- Performance optimization suggestions
-- Documentation completeness checks
-- API contract validation
-
----
-
-### 4. **Data Agent** 📊
-**Primary Domain**: Data processing, analytics, insights
-
-**Permissions**:
-- ✅ Read/write to `data/` directory
-- ✅ Create sample data for testing
-- ✅ Process transcription outputs
-- ❌ Cannot modify core business logic directly
-- ❌ Cannot make permanent production changes
-
-**Key Tasks**:
-- Loading initial datasets
-- Processing batch transcriptions
-- Creating analytics reports
-- Managing test fixtures
-
----
-
-## 🔐 Security & Access Control
-
-### Read-Only Operations (All Agents)
-```
-✅ Reading any file
-✅ Running code analysis tools
-✅ Viewing logs and debug output
-✅ Fetching dependency info
+```text
+src/                  Active Workers, AI services, shared types/utilities
+functions/api/        Cloudflare Pages Functions and shared API helpers
+web/                  Static Pages frontend (HTML, CSS, browser JavaScript)
+migrations/           Ordered D1/SQLite migrations
+scripts/              Build, migration, resource, and deployment scripts
+tests/                Active Node tests and legacy pytest tests
+api/, core/           Legacy FastAPI/Python implementation
+models/, data/        Legacy Python package/data assets
+DOCUMENTS/            Architecture, deployment, testing, and plan documents
 ```
 
-### Write Operations Required for:
-| Action | Required Agent(s) | Notes |
-|--------|-------------------|---------|
-| Modify source code | Dev Agent | Must follow coding standards |
-| Update Docker configuration | Builder Agent | Container optimization only |
-| Add new models | Dev + Review Agent | Requires review workflow |
-| Modify test files | Dev Agent | Keep coverage >80% |
-| Process data files | Data Agent | Temporary writes OK |
+## Component Boundaries
 
-### Prohibited Operations 🔴
-```
-❌ Direct database modifications without approval
-❌ Writing to secrets/credentials files  
-❌ External API calls outside defined scope
-❌ Deleting repository content
-❌ Modifying `.gitignore` structure
-```
+### Frontend
 
----
+- `web/` is framework-free HTML, CSS, and browser JavaScript; do not introduce a frontend framework unless explicitly requested.
+- `scripts/build_pages.mjs` assembles `dist/`, copies CSS to `dist/static/css/`, copies `web/prospect/app.js` to `dist/static/app.js`, and writes `dist/_redirects`.
+- Frontend API calls use same-origin routes.
+- The dashboard behavior used by the Pages build is in `api/static/js/dashboard.js`; treat `web/app.js` as stale unless deliberately synchronized.
+- Keep `web/prospect/app.js` and `web/prospect/index.html` aligned when changing prospect behavior.
 
-## 🛠️ Tool Usage Guidelines
+### Pages Functions
 
-### Build Tools (Builder Agent)
+- `functions/api/` contains the public and dashboard APIs.
+- `functions/api/_shared.js` contains shared response, validation, and D1 helpers.
+- Export the appropriate `onRequestGet`, `onRequestPost`, or other Pages Function handler.
+- Return sanitized errors; never leak stack traces or database details.
+
+### Workers and Queues
+
+- `src/webhook-worker.ts` is the webhook Worker entry point.
+- `src/queue-producer.ts` publishes transcription work.
+- `src/queue-transcription.ts` consumes messages, calls Workers AI, and persists results idempotently to D1.
+- `src/worker-transcription.ts` and `src/worker-intelligence.ts` isolate model-specific behavior.
+- Keep queue processing idempotent. Do not acknowledge a message before required persistence succeeds.
+- Key transcript and insight upserts by a stable `audio_key`.
+- `src/consumer.ts` and `src/whatsapp-webhook.ts` are not configured Worker entry points; do not treat them as active entry points.
+
+### D1 and Migrations
+
+- Add a new numerically prefixed migration; do not rewrite an already-deployed migration.
+- Use idempotent writes for retryable processing.
+- Validate migrations against a database that may already contain earlier schema changes.
+- Run `bash scripts/migrate_d1.sh` only against the intended environment.
+
+### Legacy Python
+
+- `api/main.py`, `api/webhooks.py`, `core/database_manager.py`, `core/transcription_service.py`, and `core/intelligence_service.py` implement the legacy stack.
+- Docker files and `docker-compose.yml` configure that legacy stack.
+- Do not modify or present this stack as the current production path unless explicitly requested.
+
+## Commands
+
+Install dependencies:
+
 ```bash
-# Allowed commands for Builder Agent
-docker build -f api/Dockerfile -t listening-engine:api .
-docker build -f core/Dockerfile -t listening-engine:core .  
-docker-compose up --build
-docker-compose down
-
-# NOT allowed without explicit approval:
-docker push to external registries
-docker rm production containers
+npm ci
 ```
 
-### API Development (Dev Agent)
-```python
-# Standard workflow for new endpoints
-1. Dev Agent creates endpoint stub in api/main.py
-2. Dev Agent adds type hints and docstrings  
-3. Review Agent validates implementation
-4. Builder Agent updates Dockerfile if needed
-5. Test suite created and validated
-```
+Run active Node/Cloudflare tests:
 
-### Transcription Service (Dev/Data Agents)
-- Process audio files from `data/` directory
-- Output structured transcripts to `models/` or `data/processed/`
-- Log processing metrics for analytics
-- Handle rate limiting gracefully
-
----
-
-## 🔄 Collaboration Workflows
-
-### Feature Development Lifecycle
-```
-1. Dev Agent proposes feature → Creates ticket/PR description
-2. Review Agent assesses impact → Provides feedback  
-3. Dev Agent implements changes → Updates source code
-4. Builder Agent prepares deployment artifacts → Builds containers
-5. Data Agent validates data integrity → Processes samples
-6. All agents review before merge → Human approval if needed
-```
-
-### Bug Fix Workflow
-```
-1. Review Agent identifies bug → Creates issue report
-2. Dev Agent creates fix branch → Implements patch  
-3. Builder Agent tests in container → Validates deployment
-4. Data Agent ensures no data corruption → Verifies integrity
-5. Merge after validation passes → All agents sign off
-```
-
-### Emergency Hotfixes
-- **Authorized**: Dev Agent with Review Agent approval
-- **Process**: Minimal change, rapid deploy, thorough post-mortem
-- **Requirement**: Document all changes in DOCUMENTS/PLANS/ directory
-
----
-
-## 📋 Response Format Standards
-
-All agent responses should follow this structure:
-
-```markdown
-## Context
-[Brief description of current situation]
-
-## Analysis  
-[Technical assessment and implications]
-
-## Plan
-1. [Immediate action step]
-2. [Secondary considerations]
-3. [Long-term implications]
-
-## Action Required
-- [Specific task to execute]
-- @Agent: [Which agent should act]
-
-## Request (if needed)
-- [User approval required for]
-- [What information is blocking progress]
-```
-
----
-
-## 🧪 Testing Requirements
-
-### Pre-Merge Checklist
-- [ ] All new code has corresponding tests in `tests/`
-- [ ] Tests pass with `docker-compose run --build core`
-- [ ] No deprecation warnings in logs
-- [ ] API contract maintained
-- [ ] Documentation updated if needed
-
-### Test Coverage Targets
-- Unit tests: 80%+ coverage
-- Integration tests: Critical paths covered
-- E2E tests: User-facing workflows tested
-
----
-
-## 📦 Deployment Guidelines
-
-### Environment Variables (Managed by Builder)
-```env
-# .env.example template location
-DATABASE_URL=postgresql://...
-API_KEY=***
-SECRET_KEY=***
-TRANScription_ENDPOINT=https://api.transcribe.io/v1
-WEBHOOK_URL=https://yourdomain.com/api/webhooks
-```
-
-### Deployment Checklist
-- [ ] Code reviewed and merged to main
-- [ ] Tests passing in CI/CD pipeline
-- [ ] Docker images built with new tags
-- [ ] `.gitignore` doesn't include sensitive data
-- [ ] Rollback plan documented
-
----
-
-## 📝 Documentation Standards
-
-### What Gets Documented
-- New API endpoints (OpenAPI/Swagger)
-- Database schema changes
-- Model definitions and relationships  
-- Configuration parameters
-- Webhook event specifications
-
-### Where Documentation Lives
-- Inline code comments (Python docstrings)
-- API endpoint README files
-- Configuration documentation in config files
-- Architecture overview in README.md
-
----
-
-## 🔗 External Integrations
-
-### Allowed External Services
-```
-✅ Transcription APIs (listed in requirements.txt)
-✅ Database connections (via secure env vars)
-✅ Logging services (configured in docker-compose)
-❌ Social media direct scraping (requires explicit approval)
-❌ Storage to external SaaS without audit trail
-```
-
-### Rate Limiting & Quotas
-- All external API calls must implement retry logic
-- Must handle 429 responses gracefully
-- Log all external failures for analysis
-- Include fallback mechanisms
-
----
-
-## 🧰 Quick Reference Commands
-
-### For Dev Agents
 ```bash
-# Start development environment
-docker-compose up -d --build
-
-# Run tests
-npm run test
-
-# View specific service logs  
-docker-compose logs api/last 100
-
-# Check code style
-npm run lint
+npm test
 ```
 
-### For Builder Agents  
+This directly runs `tests/worker.test.ts`, `tests/queue-transcription.test.ts`, and `tests/pages-functions.test.js`. It does not run Jest or pytest.
+
+Build Workers with dry-run Wrangler deployments:
+
 ```bash
-# Build all services
-docker-compose build
-
-# Deploy to staging
-docker-compose -f docker-compose-staging.yml up -d
-
-# Cleanup old images
-docker system prune -f
+npm run build
 ```
 
-### For Data Agents
+Build the static Pages site into `dist/`:
+
 ```bash
-# Process pending transcriptions  
-npm run process-queue
-
-# Generate analytics report
-npm run generate-report
-
-# Load sample data
-npm run load-sample-data
+npm run build:pages
 ```
 
----
+Type-check when changing TypeScript:
 
-## 🎯 Agent Priority Matrix
-
-| Scenario | Primary Agent | Supporting Agents | Action Required |
-|----------|--------------|-------------------|------------------|
-| New feature request | Dev | Review, Data, Builder | Full workflow |
-| Bug in core logic | Dev | Review, Data | Quick fix if critical |
-| API endpoint addition | Dev | Review, Builder | Standard PR flow |
-| Docker optimization | Builder | Dev (if code changes) | Build test only |
-| Transcription improvement | Dev/Data | Review | A/B testing recommended |
-| Security vulnerability | All agents read-only | None | Human escalation |
-
----
-
-## 🚨 Escalation Path
-
-### When to Escalate
-1. **Critical bugs** → All agents + human review immediately
-2. **Security issues** → Builder + Dev + human approval  
-3. **Data corruption risk** → Data + Review + rollback plan ready
-4. **Deployment blocks** → Builder identifies resolution path
-5. **Ambiguous requirements** → Any agent tags @human for clarification
-
-### Communication Channels
-- Use Git commits with descriptive messages
-- Create issues for non-trivial changes
-- Update DOCUMENTS/PLANS/ directory with design decisions
-- Document trade-offs in PR descriptions
-
----
-
-## 📁 File Naming Convention Enforcement
-
-All new documentation files (Markdown files) should be stored inside the `DOCUMENTS` folder and follow this naming convention:
-
-### Format:
-```
-000-<file-name>.md
+```bash
+npx tsc --noEmit
 ```
 
-### Requirements:
-1. **Sequential numbering**: Files must start with 001-099, in logical order
-2. **Capitalized names**: Each word in the file name should be capitalized
-3. **Separators**: Use dashes between words (no underscores)
-4. **Extension**: All files must have .md extension
+`npm run lint` is currently a placeholder that prints `Linting skipped`; do not describe it as an enforced lint check. There is no configured local development script.
 
-### Examples:
-- `001-Cloudflare-Greenfield-Implementation.md`
-- `002-Cf-Api-Token.md`
-- `003-Cf-Api-Token-Permissions.md`
-- `004-Cloudflare-Architecture.md`
+Run legacy Python tests only when changing the Python implementation:
 
-This standard ensures consistent organization and easy navigation of documentation files.
+```bash
+pytest tests/ -vv
+```
 
----
+## Change Workflow
 
-*Generated for Community Listening Engine repository | Last updated: [auto-generated]*
+1. Before modifying files, check the current branch. If it is the repository's default branch, create a descriptive new branch from it before making changes.
+2. Commit all resulting changes on that new branch; never commit task changes directly to the default branch unless the user explicitly requests it.
+3. Identify whether the task targets the active Cloudflare stack, the legacy Python stack, or shared frontend assets.
+4. Read the nearest authoritative source and configuration.
+5. Make the smallest focused change within the relevant component boundary.
+6. Add or update tests with behavior changes.
+7. Run the relevant verification commands.
+8. Update documentation under `DOCUMENTS/` when architecture, commands, APIs, deployment, or operational behavior changes.
+
+Minimum verification for active Cloudflare changes:
+
+```bash
+npm test
+npm run build
+npm run build:pages
+```
+
+Also run `npx tsc --noEmit` for TypeScript changes.
+
+Update the corresponding test when changing:
+
+- Worker behavior: `tests/worker.test.ts`
+- Queue behavior: `tests/queue-transcription.test.ts`
+- Pages API behavior: `tests/pages-functions.test.js`
+
+## Conventions and Safety
+
+- The root package is ESM (`"type": "module"`).
+- Avoid Node-only APIs in Worker and Pages Function code.
+- Keep frontend and API response contracts aligned.
+- Escape user-controlled or database-provided values before rendering them.
+- Never commit credentials, tokens, production data, database IDs, or namespace IDs.
+- Require human review for production deployments, destructive D1 changes, access-policy changes, and domain/route changes.
+- When asked to branch and commit, inspect `git status` and the diff, create a descriptive branch, stage only intended files, and use a focused commit message.
+
+## Known Pitfalls
+
+- The root `README.md`, `jest.config.js`, and some npm dependencies are legacy.
+- `tests/whatsapp-webhook.test.ts` uses Vitest, but Vitest is not installed and this file is not in `npm test`.
+- The D1 migration reconciler covers migrations `00` through `03`, but not `04_create_prospects.sql` or `05_add_business_name_to_prospects.sql`; verify the `prospects` table against partially migrated databases.
+- Staging hostnames differ between documentation and scripts (`stage-cle` versus `stage-ask`).
+- `DOCUMENTS/016-Deployment-Configuration.md` describes a manual `target=staging` workflow input that the production workflow does not define.
+- The webhook Worker acknowledges text payloads without persisting them to the message tables consumed by the dashboard.
+- `scripts/README.md` documents only part of the current deployment-script surface.
+
+Do not silently fix unrelated inconsistencies during feature work. Flag them and keep changes focused.
+
+## Documentation
+
+- Put new Markdown documents under `DOCUMENTS/`.
+- Use numeric prefixes and capitalized, dash-separated names, for example `018-Example-Title.md`.
+- Link to authoritative source files rather than duplicating their contents.
+- Prefer `README-cloudflare.md`, `src/README-cloudflare.md`, and `DOCUMENTS/016-Deployment-Configuration.md` for current deployment context.
+- Treat other `DOCUMENTS/` files as plans or historical records unless confirmed otherwise.
